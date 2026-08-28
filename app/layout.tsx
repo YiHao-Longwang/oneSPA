@@ -14,12 +14,12 @@ export const metadata: Metadata = {
   applicationName: "onepsa",
   icons: {
     icon: [
-      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
-      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
-      { url: "/favicon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon-48x48.png?v=20260828-dragon", sizes: "48x48", type: "image/png" },
+      { url: "/favicon-96x96.png?v=20260828-dragon", sizes: "96x96", type: "image/png" },
+      { url: "/favicon-192x192.png?v=20260828-dragon", sizes: "192x192", type: "image/png" },
     ],
-    shortcut: "/favicon-48x48.png",
-    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon-48x48.png?v=20260828-dragon",
+    apple: "/apple-touch-icon.png?v=20260828-dragon",
   },
 };
 
