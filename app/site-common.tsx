@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { googleBusinessProfileUrl } from "./seo";
 
 /** Renders a structured-data block (see faqJsonLd / localBusinessJsonLd in seo.ts). */
 export function JsonLd({ data }: { data: unknown }) {
@@ -6,55 +7,82 @@ export function JsonLd({ data }: { data: unknown }) {
 }
 
 export const assetBase = "/assets";
+
+/** Original commissioned atmosphere images; never serve the previous photo set. */
+export function experienceImage(source: string) {
+  if (/steam|salt/.test(source)) return "/assets/generated/steam.jpg";
+  if (/tcm|meridian|moxa|mud|bone|intimate/.test(source)) return "/assets/generated/herbal-room.jpg";
+  if (/beauty|photon|spot|hair/.test(source)) return "/assets/generated/beauty-suite.jpg";
+  if (/locker|grooming/.test(source)) return "/assets/generated/grooming-room.jpg";
+  if (/massage|scrub|treatment|outcall|daytime|solo/.test(source)) return "/assets/generated/treatment-room.jpg";
+  if (/dining|vip/.test(source)) return "/assets/generated/dining-room.jpg";
+  if (/golf/.test(source)) return "/assets/generated/golf-room.jpg";
+  if (/movie|recliner/.test(source)) return "/assets/generated/rest-lounge.jpg";
+  if (/immersive|corridor/.test(source)) return "/assets/generated/light-corridor.jpg";
+  return "/assets/generated/bath-pool.jpg";
+}
+
+/**
+ * Brand naming. Kept in one place so the outlet name never drifts between
+ * pages. Deliberately distinct from the other operator that trades under the
+ * Nanhai Onsen name; see the note on sameAsProfiles in seo.ts.
+ */
+export const brandEn = "Nanhai Onsen";
+export const brandCn = "南海龙宫";
+export const brandFull = `${brandEn} ${brandCn}`;
 export const whatsappNumberDisplay = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+60 14-315 5632";
 const whatsappDigits = whatsappNumberDisplay.replace(/\D/g, "");
 const whatsappBase = `https://wa.me/${whatsappDigits}`;
 export const whatsappCartBase = `${whatsappBase}?text=`;
-export const whatsappHref = `${whatsappBase}?text=Hi%2C%20I%20would%20like%20to%20ask%20about%20the%20packages`;
-export const whatsappHrefCn = `${whatsappBase}?text=%E4%BD%A0%E5%A5%BD%EF%BC%8C%E6%88%91%E6%83%B3%E4%BA%86%E8%A7%A3%E9%85%8D%E5%A5%97`;
+export const whatsappHref = `${whatsappBase}?text=Hi%2C%20I%20would%20like%20to%20ask%20about%20the%20prices`;
+export const whatsappHrefCn = `${whatsappBase}?text=%E4%BD%A0%E5%A5%BD%EF%BC%8C%E6%88%91%E6%83%B3%E4%BA%86%E8%A7%A3%E4%BB%B7%E7%9B%AE`;
 export const telegramHref = process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/nhlg09";
 export const telegramHrefCn = process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/nhlg09";
 export const telegramDisplay = telegramHref.replace(/^https?:\/\/t\.me\//, "@").replace(/\/$/, "");
+export const wechatId = process.env.NEXT_PUBLIC_WECHAT_ID || "Longwang1918";
 
 export const navItems = [
   ["Home", "/"],
-  ["Packages", "/packages/"],
   ["Facilities", "/facilities/"],
-  ["Home Service", "/home-massage/"],
-  ["Beauty", "/beauty/"],
+  ["Prices", "/packages/"],
   ["TCM", "/tcm/"],
-  ["FAQ", "/faq/"],
+  ["Beauty", "/beauty/"],
+  ["Home Service", "/home-massage/"],
   ["Contact", "/contact/"],
+  ["FAQ", "/faq/"],
+  ["技师挑选", "/jishi-tiaoxuan/"],
 ];
-
 const cnNavItems = [
-  ["Home", "首页", "/cn/"],
-  ["Packages", "配套", "/cn/packages/"],
-  ["Facilities", "设施", "/cn/facilities/"],
-  ["Home Service", "上门服务", "/cn/home-massage/"],
-  ["Beauty", "美容部", "/cn/beauty/"],
-  ["TCM", "中医部", "/cn/tcm/"],
-  ["FAQ", "常见问题", "/cn/faq/"],
-  ["Contact", "联系我们", "/cn/contact/"],
+  ["Home", "首页", "/"],
+  ["Facilities", "汤泉空间", "/facilities/"],
+  ["Packages", "普通价目", "/packages/"],
+  ["TCM", "中医调理", "/tcm/"],
+  ["Beauty", "美容护理", "/beauty/"],
+  ["Home Service", "上门按摩", "/home-massage/"],
+  ["Contact", "来访指引", "/contact/"],
+  ["FAQ", "常见问题", "/faq/"],
+  ["技师挑选", "技师挑选", "/jishi-tiaoxuan/"],
 ];
+const navLabels: Record<string, string> = {
+  Facilities: "The bathhouse", Packages: "Prices", TCM: "TCM wellness",
+  Beauty: "Beauty", "Home Service": "At home", Contact: "Visit us",
+};
 
 export const footerPolicies = [
-  ["Cancellation & Rescheduling", "/cancellation-and-refund-policy-on-service/"],
   ["Terms & Conditions", "/terms-conditions/"],
   ["Privacy Policy", "/privacy-policy/"],
 ];
 
 const footerPoliciesCn = [
-  ["取消与改期", "/cn/cancellation-and-refund-policy-on-service/"],
-  ["条款与细则", "/cn/terms-conditions/"],
-  ["隐私政策", "/cn/privacy-policy/"],
+  ["条款与细则", "/terms-conditions/"],
+  ["隐私政策", "/privacy-policy/"],
 ];
 
 const footerHighlights = ["Open 24 Hours", "12-Hour Stay", "Viva Home Mall KL"];
 const footerHighlightsCn = ["24 小时营业", "12 小时任你待", "Viva Home Mall KL"];
 
 const footerExperienceLinks = [
-  ["Packages", "/packages/"],
+  ["Prices", "/packages/"],
   ["Facilities", "/facilities/"],
   ["Home Massage", "/home-massage/"],
   ["Beauty Studio", "/beauty/"],
@@ -62,24 +90,40 @@ const footerExperienceLinks = [
 ];
 
 const footerExperienceLinksCn = [
-  ["配套", "/cn/packages/"],
-  ["设施", "/cn/facilities/"],
-  ["上门按摩", "/cn/home-massage/"],
-  ["美容部", "/cn/beauty/"],
-  ["中医部", "/cn/tcm/"],
+  ["价目", "/packages/"],
+  ["设施", "/facilities/"],
+  ["上门按摩", "/home-massage/"],
+  ["美容部", "/beauty/"],
+  ["中医部", "/tcm/"],
 ];
 
 /**
  * Public profiles for this outlet. Keep in sync with sameAsProfiles in seo.ts.
  * The onespaofficial accounts are deliberately absent - they belong to the
- * other operator trading under the One Spa name.
+ * other operator trading under the Nanhai Onsen name.
  */
 const socialLinks = [
   ["Instagram", "https://www.instagram.com/vivadespa/"],
   ["Telegram", telegramHref],
+  ["Google Business", googleBusinessProfileUrl],
+  ["WeChat", `#wechat-${wechatId}`],
 ];
 
 type Locale = "en" | "cn";
+
+/**
+ * Wordmark. Set in type rather than an image: the previous logo-duo.svg /
+ * logo-cream.svg files are the One Spa mark and cannot be reused. Pass
+ * tone="cream" on dark ground.
+ */
+export function Brandmark({ tone = "ink" }: { tone?: "ink" | "cream" }) {
+  return (
+    <span className={`brandmark${tone === "cream" ? " on-dark" : ""}`} aria-hidden="true">
+      <span className="brandmark-cn">{brandCn}</span>
+      <span className="brandmark-en">{brandEn}</span>
+    </span>
+  );
+}
 
 export function Diamond() {
   return <span className="dia" aria-hidden="true" />;
@@ -123,16 +167,40 @@ export function TelegramIcon() {
   );
 }
 
+export function WeChatIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
+      <path d="M10.5 18.5a8 6.2 0 1 1 7.6-4.2" />
+      <path d="M14 16.6a5.1 4.1 0 1 0 4.7-2.6" />
+      <path d="m8.2 18.3-3 .9.9-2" />
+      <path d="m18 20.1 2.4.7-.7-1.7" />
+      <path d="M7.8 10h.1M12 10h.1M16.2 17h.1M19.2 17h.1" />
+    </svg>
+  );
+}
+
 export function ContactButtons({
-  locale = "en",
+  locale = "cn",
   className = "",
   whatsappLabel,
   telegramLabel,
+  wechatLabel,
 }: {
   locale?: Locale;
   className?: string;
   whatsappLabel?: string;
   telegramLabel?: string;
+  wechatLabel?: string;
 }) {
   const isCn = locale === "cn";
   return (
@@ -145,66 +213,47 @@ export function ContactButtons({
         <TelegramIcon />
         {telegramLabel ?? (isCn ? "Telegram 咨询" : "Telegram Us")}
       </a>
+      <button
+        className="btn contact-wx"
+        type="button"
+        data-wechat-copy={wechatId}
+        data-copy-label={wechatLabel ?? `WeChat ${wechatId}`}
+        data-copied-label={isCn ? "已复制 WeChat ID" : "WeChat ID copied"}
+      >
+        <WeChatIcon />
+        {wechatLabel ?? `WeChat ${wechatId}`}
+      </button>
     </div>
   );
 }
 
-export function Header({ active = "Home", locale = "en" }: { active?: string; locale?: Locale }) {
+export function Header({ active = "Home", locale = "cn" }: { active?: string; locale?: Locale }) {
   const isCn = locale === "cn";
   const items = isCn
     ? cnNavItems.map(([key, label, href]) => ({ key, label, href }))
-    : navItems.map(([label, href]) => ({ key: label, label, href }));
-  const englishHref = active === "Cart" ? "/cart/" : navItems.find(([label]) => label === active)?.[1] ?? "/";
-  const chineseHref = active === "Cart" ? "/cn/cart/" : cnNavItems.find(([key]) => key === active)?.[2] ?? "/cn/";
-  const cartHref = isCn ? "/cn/cart/" : "/cart/";
+    : navItems.map(([label, href]) => ({ key: label, label: navLabels[label] ?? label, href }));
 
   return (
-    <header className="topbar">
+    <header className="topbar" lang={isCn ? "zh-Hans" : "en"}>
+      <a className="skip-link" href="#main-content">{isCn ? "跳到主要内容" : "Skip to content"}</a>
       <div className="container">
-        <a className="brand" href={isCn ? "/cn/" : "/"} aria-label="One Spa home">
-          <img className="brand-lockup" src={`${assetBase}/logo-duo.svg`} alt={isCn ? "One Spa 壹号汤泉" : "One Spa"} />
+        <a className="brand" href="/" aria-label={brandFull}>
+          <Brandmark />
         </a>
         <nav className="nav" aria-label="Primary navigation">
-          {items.map(({ key, label, href }) => (
-            <a className={key === active ? "on" : undefined} href={href} key={key}>
+          {items.filter(({ key }) => !["Home", "FAQ", "技师挑选"].includes(key)).map(({ key, label, href }) => (
+            <a className={key === active ? "on" : undefined} aria-current={key === active ? "page" : undefined} href={href} key={key}>
               {label}
             </a>
           ))}
         </nav>
         <div className="top-right">
-          <a className="cart-link" href={cartHref} aria-label={isCn ? "购物车" : "Cart"}>
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.6"
-              aria-hidden="true"
-            >
-              <circle cx="9" cy="20" r="1" />
-              <circle cx="17" cy="20" r="1" />
-              <path d="M3 4h2l2.1 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L20 8H6" />
-            </svg>
-            <span className="cart-count" data-cart-count hidden>
-              0
+          <button className="mobile-tech-link promo-tech-link" type="button" data-tech-inquiry aria-label="最新 男士必看 技师挑选">
+            <span className="promo-kicker">
+              <strong>最新!!</strong> 男士必看
             </span>
-          </a>
-          <div className="lang" aria-label="Language">
-            {isCn ? (
-              <>
-                <span className="on">中文</span>
-                <a href={englishHref}>EN</a>
-              </>
-            ) : (
-              <>
-                <a href={chineseHref}>中文</a>
-                <span className="on">EN</span>
-              </>
-            )}
-          </div>
+            <span className="promo-main">技师挑选</span>
+          </button>
           <details className="mnav">
             <summary aria-label="Menu">
               <svg
@@ -222,9 +271,15 @@ export function Header({ active = "Home", locale = "en" }: { active?: string; lo
             </summary>
             <nav className="mnav-list" aria-label="Mobile navigation">
               {items.map(({ key, label, href }) => (
-                <a href={href} key={key}>
-                  {label}
-                </a>
+                key === "技师挑选" ? (
+                  <button type="button" data-tech-inquiry key={key}>
+                    {label}
+                  </button>
+                ) : (
+                  <a href={href} key={key}>
+                    {label}
+                  </a>
+                )
               ))}
             </nav>
           </details>
@@ -240,7 +295,7 @@ export function Hero({
   copy,
   image,
   imageAlt,
-  locale = "en",
+  locale = "cn",
   children,
 }: {
   eyebrow: string;
@@ -253,18 +308,18 @@ export function Hero({
 }) {
   const defaultAlt =
     locale === "cn"
-      ? "One Spa 南海龙宫 — 吉隆坡 24 小时SPA汤泉会所"
-      : "One Spa 南海龙宫 - 24 hour spa and hot spring in Kuala Lumpur";
+      ? `${brandFull} — 吉隆坡 24 小时SPA汤泉会所`
+      : `${brandFull} - 24 hour spa and hot spring in Kuala Lumpur`;
 
   return (
-    <section className="hero">
-      <img className="hero-img" src={`${assetBase}/${image}`} alt={imageAlt ?? defaultAlt} fetchPriority="high" />
+    <section className="hero chapter-hero" lang={locale === "cn" ? "zh-Hans" : "en"}>
       <div className="container">
         <div className="k">{eyebrow}</div>
         <h1>{title}</h1>
         <p>{copy}</p>
         {children ? <div className="cta">{children}</div> : null}
       </div>
+      <figure className="chapter-image"><img className="hero-img" src={experienceImage(image)} alt={imageAlt ?? defaultAlt} fetchPriority="high" decoding="async" /><figcaption>{locale === "cn" ? "南海龙宫 · 汤泉手记" : "NANHAI ONSEN · THE BATHHOUSE JOURNAL"}</figcaption></figure>
     </section>
   );
 }
@@ -279,7 +334,7 @@ export function SectionHead({
   sub?: string;
 }) {
   return (
-    <div className="sec-head">
+    <div className="sec-head" data-reveal>
       <div className="k">{eyebrow}</div>
       <h2>{title}</h2>
       {sub ? <p className="sub">{sub}</p> : null}
@@ -290,7 +345,7 @@ export function SectionHead({
   );
 }
 
-export function Footer({ locale = "en" }: { locale?: Locale }) {
+export function Footer({ locale = "cn" }: { locale?: Locale }) {
   const isCn = locale === "cn";
   const items = isCn ? cnNavItems.map(([, label, href]) => [label, href]) : navItems;
   const policies = isCn ? footerPoliciesCn : footerPolicies;
@@ -298,21 +353,21 @@ export function Footer({ locale = "en" }: { locale?: Locale }) {
   const experiences = isCn ? footerExperienceLinksCn : footerExperienceLinks;
 
   return (
-    <footer className="site" id="contact">
+    <footer className="site" id="contact" lang={isCn ? "zh-Hans" : "en"}>
       <div className="container fwrap">
         <div className="footer-top">
           <div className="footer-brand">
-            <img className="flogo" src={`${assetBase}/logo-cream.svg`} alt={isCn ? "One Spa 壹号汤泉" : "One Spa"} />
+            <Brandmark tone="cream" />
             <div>
               <div className="slogan">
-                {isCn ? "泡足 12 小时" : "Twelve Hours in a"}
+                {isCn ? "一间不打烊的" : "A Kuala Lumpur Bathhouse"}
                 <br />
-                {isCn ? "吉隆坡 24 小时温泉会所" : "Kuala Lumpur Hot Spring"}
+                {isCn ? "吉隆坡 24 小时温泉会所" : "That Never Closes"}
               </div>
               <p className="footer-copy">
                 {isCn
-                  ? "One Spa 南海龙宫，吉隆坡 24 小时温泉会所，集合泡汤、按摩、美容、中医调理与私人养生护理。"
-                  : "One Spa 南海龙宫 is a warm, all-hours retreat for hot spring, massage, beauty, TCM and private wellness sessions in Kuala Lumpur."}
+                  ? `${brandCn}，吉隆坡 24 小时温泉会所，集合泡汤、按摩、美容、中医调理与私人养生护理。可通过 WhatsApp、Telegram 或 WeChat 联系客服。`
+                  : `${brandFull} is a warm, all-hours retreat for hot spring bathing, massage, beauty, TCM and private wellness sessions in Kuala Lumpur. Contact us on WhatsApp, Telegram or WeChat.`}
               </p>
             </div>
           </div>
@@ -324,13 +379,13 @@ export function Footer({ locale = "en" }: { locale?: Locale }) {
               whatsappLabel={`WhatsApp ${whatsappNumberDisplay}`}
               telegramLabel={isCn ? "Telegram 咨询" : "Telegram Us"}
             />
-            <a className="footer-secondary" href={isCn ? "/cn/packages/" : "/packages/"}>
-              {isCn ? "看配套" : "View Packages"}
+            <a className="footer-secondary" href="/packages/">
+              {isCn ? "看价目" : "View Prices"}
             </a>
           </div>
         </div>
 
-        <div className="footer-highlights" aria-label="One Spa highlights">
+        <div className="footer-highlights" aria-label={isCn ? `${brandCn}亮点` : `${brandEn} highlights`}>
           {highlights.map((item) => (
             <span key={item}>{item}</span>
           ))}
@@ -340,9 +395,15 @@ export function Footer({ locale = "en" }: { locale?: Locale }) {
           <div className="col footer-link-col">
             <h6>{isCn ? "浏览" : "Explore"}</h6>
             {items.map(([label, href]) => (
-              <a href={href} key={label}>
-                {label}
-              </a>
+              label === "技师挑选" ? (
+                <button type="button" data-tech-inquiry key={label}>
+                  {label}
+                </button>
+              ) : (
+                <a href={href} key={label}>
+                  {label}
+                </a>
+              )
             ))}
           </div>
           <div className="col footer-link-col">
@@ -356,20 +417,26 @@ export function Footer({ locale = "en" }: { locale?: Locale }) {
           <div className="col footer-visit-col">
             <h6>{isCn ? "地址" : "Visit"}</h6>
             <p>
-              Lot No. 2-69 & 2-70, Level 2, Viva Home Mall,
+              LG Floor, Viva Home Mall,
               <br />
-              85, Jalan Loke Yew, Taman Miharja, 52200 Kuala Lumpur
+              85 Jalan Loke Yew, Taman Miharja, 52200 Kuala Lumpur
             </p>
-            <ContactButtons locale={locale} className="footer-mini-contact" />
+            
             <div className="footer-social">
               <h6>{isCn ? "关注我们" : "Follow Us"}</h6>
               <div className="footer-social-row">
                 {socialLinks.map(([label, href]) => (
                   // rel="me" marks these as profiles of the same entity, which
                   // backs up the sameAs claim in the business structured data.
-                  <a href={href} key={label} target="_blank" rel="me noopener">
-                    {label}
-                  </a>
+                  label === "WeChat" ? (
+                    <button type="button" data-wechat-copy={wechatId} data-copy-label={`WeChat ${wechatId}`} data-copied-label={isCn ? "已复制 WeChat ID" : "WeChat ID copied"} key={label}>
+                      WeChat {wechatId}
+                    </button>
+                  ) : (
+                    <a href={href} key={label} target="_blank" rel="me noopener">
+                      {label}
+                    </a>
+                  )
                 ))}
               </div>
             </div>
@@ -383,28 +450,41 @@ export function Footer({ locale = "en" }: { locale?: Locale }) {
             ))}
           </div>
         </div>
+        <p className="image-disclosure">{isCn ? "本网站氛围图片由 AI 生成，仅供意境参考。想看真实环境照片，可在 WhatsApp、Telegram 或 WeChat 向客服索取；实际设施及服务以到店为准。" : "Atmosphere images on this site are AI-generated illustrations. Ask us on WhatsApp, Telegram or WeChat and we will send real photos of the outlet. Actual facilities and services may differ."}</p>
         <div className="bottom">
-          <span>One Spa · © 2026 One Spa. All rights reserved.</span>
-          <span>{isCn ? "通过 WhatsApp 预约" : "Bookings handled through WhatsApp"}</span>
+          <span>{`${brandFull} · © 2026 ${brandEn}. All rights reserved.`}</span>
+          <span>{isCn ? `WeChat ID：${wechatId}` : `WeChat ID: ${wechatId}`}</span>
         </div>
       </div>
     </footer>
   );
 }
 
-export function FloatingWhatsApp({ locale = "en" }: { locale?: Locale }) {
+export function FloatingWhatsApp({ locale = "cn" }: { locale?: Locale }) {
   const isCn = locale === "cn";
 
   return (
-    <div className="fab-stack" aria-label={isCn ? "联系 One Spa" : "Contact One Spa"}>
-      <a className="fab whatsapp" href={isCn ? whatsappHrefCn : whatsappHref} target="_blank" rel="noopener" aria-label="WhatsApp">
+    <div className="contact-rail" lang={isCn ? "zh-Hans" : "en"} aria-label={isCn ? `联系${brandCn}` : `Contact ${brandEn}`}>
+      <div className="contact-rail-intro"><span className="status-dot" /><span>{isCn ? "24 小时营业" : "ALWAYS OPEN"}</span><span>{isCn ? "客服咨询" : "Customer service"}</span></div>
+      <a className="rail-channel whatsapp" href={isCn ? whatsappHrefCn : whatsappHref} target="_blank" rel="noopener" aria-label="WhatsApp">
         <WhatsAppIcon />
         WhatsApp
       </a>
-      <a className="fab telegram" href={isCn ? telegramHrefCn : telegramHref} target="_blank" rel="noopener" aria-label="Telegram">
+      <a className="rail-channel telegram" href={isCn ? telegramHrefCn : telegramHref} target="_blank" rel="noopener" aria-label="Telegram">
         <TelegramIcon />
         Telegram
       </a>
+      <button
+        className="rail-channel wechat"
+        type="button"
+        data-wechat-copy={wechatId}
+        data-copy-label={`WeChat ${wechatId}`}
+        data-copied-label={isCn ? "已复制 WeChat ID" : "WeChat ID copied"}
+        aria-label={`WeChat ${wechatId}`}
+      >
+        <WeChatIcon />
+        WeChat
+      </button>
     </div>
   );
 }

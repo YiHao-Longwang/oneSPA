@@ -1,5 +1,7 @@
+import Script from "next/script";
+
 export const metadata = {
-  title: "oneSPA Admin",
+  title: "Nanhai Onsen Admin",
   robots: {
     index: false,
     follow: false,
@@ -12,7 +14,7 @@ export default function AdminPage() {
       <section className="admin-login" data-admin-login>
         <div className="admin-login-card">
           <div>
-            <span className="admin-kicker">oneSPA admin</span>
+            <span className="admin-kicker">Nanhai Onsen admin</span>
             <h1>Reservation Portal</h1>
             <p>Sign in with your admin token to view bookings, update status, and manually message customers.</p>
           </div>
@@ -58,11 +60,11 @@ export default function AdminPage() {
         <section className="admin-click-stats" aria-label="Contact click analytics">
           <div className="admin-click-head">
             <div>
-              <span className="admin-kicker">Contact clicks</span>
-              <h2>WhatsApp & Telegram</h2>
+              <span className="admin-kicker">Contact unique IPs</span>
+              <h2>Unique IPs by site and area</h2>
             </div>
             <button className="btn line" type="button" data-admin-refresh-clicks>
-              Refresh clicks
+              Refresh unique IPs
             </button>
             <a className="btn line" href="/admin/clicks">
               View all history
@@ -77,7 +79,7 @@ export default function AdminPage() {
           <div className="admin-empty">Login to load reservations.</div>
         </div>
       </section>
-      <script src="/admin-reservations.js?v=20260825-socket-auth" defer />
+      <Script src="/admin-reservations.js?v=20260908-wechat" strategy="afterInteractive" />
     </main>
   );
 }

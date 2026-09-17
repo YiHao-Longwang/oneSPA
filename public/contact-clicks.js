@@ -1,18 +1,30 @@
 (function () {
   "use strict";
 
+  var SITE = "onespa";
+
   if (/^\/(?:admin|codex-healthcheck)(?:\/|$)/.test(location.pathname)) return;
 
-  function channelFor(link) {
-    var href = String(link.href || "");
-    var className = String(link.className || "");
+  function channelFor(control) {
+    var explicit = String(control.getAttribute("data-click-channel") || "").trim().toLowerCase();
+    if (explicit === "whatsapp" || explicit === "telegram" || explicit === "wechat") return explicit;
+
+    var href = String(control.href || control.getAttribute("href") || "");
+    var className = String(control.className || "");
     if (/wa\.me|whatsapp/i.test(href) || /(^|\s)(contact-wa|whatsapp)(\s|$)/i.test(className)) return "whatsapp";
     if (/t\.me|telegram\.me|telegram/i.test(href) || /(^|\s)(contact-tg|telegram)(\s|$)/i.test(className)) return "telegram";
+    if (control.matches("[data-wechat-copy]") || /wechat/i.test(href) || /(^|\s)wechat(\s|$)/i.test(className)) return "wechat";
     return "";
   }
 
   function compactText(value) {
     return String(value || "").replace(/\s+/g, " ").trim().slice(0, 120);
+  }
+
+  function sourceFor(control) {
+    var attr = String(control.getAttribute("data-click-source") || "").trim().toLowerCase();
+    if (attr === "jishi_tiaoxuan" || attr === "baiqu") return attr;
+    return /^\/jishi-tiaoxuan(?:\/|$)/.test(location.pathname) ? "jishi_tiaoxuan" : "baiqu";
   }
 
   function send(payload) {
@@ -34,17 +46,24 @@
     function (event) {
       var target = event.target;
       if (!target || !target.closest) return;
-      var link = target.closest("a[href]");
-      if (!link) return;
+      var control = target.closest("a[href], button[data-wechat-copy], [data-click-channel]");
+      if (!control) return;
 
-      var channel = channelFor(link);
+      var channel = channelFor(control);
       if (!channel) return;
 
       send({
         channel: channel,
+        site: SITE,
+        source: sourceFor(control),
         path: location.pathname,
-        href: link.href,
-        label: compactText(link.getAttribute("aria-label") || link.textContent || channel)
+        href: control.href || control.getAttribute("href") || "",
+        label: compactText(
+          control.getAttribute("aria-label") ||
+            control.getAttribute("data-copy-label") ||
+            control.textContent ||
+            channel
+        )
       });
     },
     true

@@ -1,18 +1,8 @@
-import { FloatingWhatsApp, Footer, Header, SectionHead } from "../site-common";
+import { PolicyPageCn, cnPageSeo } from "../cn-pages";
+import { pageMetadata } from "../seo";
 
-export default function TermsPage() {
-  return (
-    <>
-      <Header />
-      <main>
-        <SectionHead eyebrow="Policy" title="Terms & Conditions" />
-        <div className="container prose">
-          <div className="pblock"><h3>Tickets</h3><p>Tickets and packages are valid for the selected visit date and time. A standard ticket gives up to 12 hours inside.</p></div>
-          <div className="pblock"><h3>Arrival</h3><p>Show your booking on your phone at the front desk. House rules and safety guidance apply inside the spa.</p></div>
-        </div>
-      </main>
-      <Footer />
-      <FloatingWhatsApp />
-    </>
-  );
+export const metadata = pageMetadata(cnPageSeo["terms-conditions"]);
+
+export default function PolicyPage() {
+  return <PolicyPageCn eyebrow="Nanhai Onsen 南海龙宫 · 政策" title="条款与细则" rows={[ ["服务", "现场服务内容与开放项目以门店当天安排为准。"], ["价格", "页面价格仅供参考，最终以门店现场公示为准。"], ["到店", "请按现场指引使用设施，并配合工作人员安排。"] ]} />;
 }

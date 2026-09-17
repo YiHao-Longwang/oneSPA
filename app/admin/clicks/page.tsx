@@ -1,5 +1,7 @@
+import Script from "next/script";
+
 export const metadata = {
-  title: "Contact Click History | oneSPA Admin",
+  title: "Contact Click History | Nanhai Onsen Admin",
   robots: {
     index: false,
     follow: false,
@@ -12,9 +14,9 @@ export default function AdminClickHistoryPage() {
       <section className="admin-login" data-click-login>
         <div className="admin-login-card">
           <div>
-            <span className="admin-kicker">oneSPA admin</span>
+            <span className="admin-kicker">Nanhai Onsen admin</span>
             <h1>Click Analytics</h1>
-            <p>Sign in with your admin token to review every WhatsApp and Telegram contact click.</p>
+            <p>Sign in with your admin token to review unique IP counts and contact click records.</p>
           </div>
           <label>
             <span>Admin token</span>
@@ -31,16 +33,36 @@ export default function AdminClickHistoryPage() {
         <header className="admin-top">
           <div>
             <span className="admin-kicker">Contact analytics</span>
-            <h1>Click History</h1>
-            <p>See all contact clicks, filter by channel, and check daily activity over time.</p>
+            <h1>Unique IP Analytics</h1>
+            <p>See different IPs by site, area, channel, and day.</p>
           </div>
           <div className="admin-top-actions">
+            <label>
+              <span>Site</span>
+              <select data-click-site defaultValue="all">
+                <option value="all">All sites</option>
+                <option value="jinyuehui">金悦汇</option>
+                <option value="onespa">Nanhai Onsen</option>
+                <option value="unknown">Old records</option>
+              </select>
+            </label>
+            <label>
+              <span>Area</span>
+              <select data-click-source defaultValue="all">
+                <option value="all">All</option>
+                <option value="main">主页/普通页面</option>
+                <option value="baiqu">白区</option>
+                <option value="jishi_tiaoxuan">技师挑选</option>
+                <option value="unknown">Old records</option>
+              </select>
+            </label>
             <label>
               <span>Channel</span>
               <select data-click-channel defaultValue="all">
                 <option value="all">All</option>
                 <option value="whatsapp">WhatsApp</option>
                 <option value="telegram">Telegram</option>
+                <option value="wechat">WeChat</option>
               </select>
             </label>
             <label>
@@ -68,7 +90,7 @@ export default function AdminClickHistoryPage() {
 
         <div className="click-tabs" role="tablist" aria-label="Contact click views">
           <button className="click-tab active" type="button" role="tab" aria-selected="true" data-click-tab="history">
-            All History
+            Click Records
           </button>
           <button className="click-tab" type="button" role="tab" aria-selected="false" data-click-tab="graph">
             Graph
@@ -96,8 +118,7 @@ export default function AdminClickHistoryPage() {
           </div>
         </section>
       </section>
-
-      <script src="/admin-click-history.js?v=20260825-click-history" defer />
+      <Script src="/admin-click-history.js?v=20260911-daily-groups" strategy="afterInteractive" />
     </main>
   );
 }

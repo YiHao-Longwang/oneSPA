@@ -3,14 +3,17 @@ import type { Metadata } from "next";
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://onespa.klyihao.com").replace(/\/$/, "");
 
 export const seoKeywords = [
-  "One Spa",
-  "oneSPA",
-  "onepsa",
-  "壹号汤泉",
+  "Nanhai Onsen",
+  "nanhai onsen KL",
   "南海龙宫",
+  "南海龙宫汤泉",
   "吉隆坡SPA",
+  "吉隆坡会所",
   "吉隆坡按摩",
   "吉隆坡娱乐",
+  "吉隆坡桑拿",
+  "吉隆坡上门",
+  "吉隆坡上门按摩",
   "吉隆坡温泉",
   "吉隆坡汤泉",
   "KL spa",
@@ -29,6 +32,8 @@ export const seoKeywords = [
   "spa Kuala Lumpur 24 hours",
   "吉隆坡水疗",
   "南海龙宫 spa 会所",
+  "南海龙宫吉隆坡会所",
+  "南海龙宫吉隆坡桑拿",
   "吉隆坡spa会所",
 ];
 
@@ -40,49 +45,6 @@ type PageMetadataOptions = {
   image?: string;
   noIndex?: boolean;
 };
-
-/** Slugs that differ between the English and Chinese trees. */
-const localisedSlugs: Record<string, string> = {
-  "/onsen-kl/": "/cn/wenquan/",
-};
-
-/**
- * Returns the en <-> cn hreflang pair for a canonical path, so Google serves the
- * right language version instead of treating the two trees as duplicates.
- * Returns undefined for pages that only exist in one language.
- */
-function alternateLanguages(canonicalPath: string) {
-  const isCn = canonicalPath === "/cn/" || canonicalPath.startsWith("/cn/");
-  const en = isCn
-    ? Object.entries(localisedSlugs).find(([, cn]) => cn === canonicalPath)?.[0] ??
-      (canonicalPath === "/cn/" ? "/" : canonicalPath.replace(/^\/cn/, ""))
-    : canonicalPath;
-  const cn = isCn ? canonicalPath : localisedSlugs[canonicalPath] ?? (canonicalPath === "/" ? "/cn/" : `/cn${canonicalPath}`);
-
-  if (!bilingualPaths.has(en)) return undefined;
-
-  return {
-    "en-MY": en,
-    "zh-MY": cn,
-    "x-default": en,
-  };
-}
-
-/** English canonical paths that have a Chinese counterpart. */
-const bilingualPaths = new Set([
-  "/",
-  "/packages/",
-  "/facilities/",
-  "/home-massage/",
-  "/beauty/",
-  "/tcm/",
-  "/onsen-kl/",
-  "/faq/",
-  "/contact/",
-  "/cancellation-and-refund-policy-on-service/",
-  "/terms-conditions/",
-  "/privacy-policy/",
-]);
 
 export function pageMetadata({
   title,
@@ -100,14 +62,13 @@ export function pageMetadata({
     keywords: [...keywords, ...seoKeywords],
     alternates: {
       canonical: canonicalPath,
-      languages: alternateLanguages(canonicalPath),
     },
     robots: noIndex ? { index: false, follow: false } : { index: true, follow: true },
     openGraph: {
       title,
       description,
       url: canonicalPath,
-      siteName: "One Spa 南海龙宫",
+      siteName: "Nanhai Onsen 南海龙宫",
       type: "website",
       images: [
         {
@@ -127,18 +88,17 @@ export function pageMetadata({
 }
 
 /** The Google Business Profile this site belongs to (南海龙宫SPA会所, Viva Home Mall). */
-const googlePlaceUrl =
-  "https://www.google.com/maps/search/?api=1&query=One%20Spa%20%E5%A3%B9%E5%8F%B7%E6%B1%A4%E6%B3%89&query_place_id=ChIJEa1Xrew3zDEROXX0qPz4IdA";
+export const googleBusinessProfileUrl = "https://share.google/Hcgob1penVXhOcgqf";
 
 /**
  * Profiles that represent this same business. `sameAs` is how Google ties the
  * site, the Business Profile and the social accounts together as one entity -
- * which matters here because another operator trades under the One Spa name.
+ * which matters here because another operator trades under the Nanhai Onsen name.
  */
 const sameAsProfiles = [
   "https://www.instagram.com/vivadespa/",
   "https://t.me/nhlg09",
-  googlePlaceUrl,
+  googleBusinessProfileUrl,
   // Deliberately excludes the onespaofficial accounts: they are linked from
   // onespa.com.my, so claiming them here would tell Google this site and that
   // operator's site are one business - the opposite of what we want.
@@ -148,19 +108,21 @@ export const localBusinessJsonLd = {
   "@context": "https://schema.org",
   "@type": "HealthAndBeautyBusiness",
   "@id": `${siteUrl}/#business`,
-  name: "One Spa 南海龙宫",
-  alternateName: ["oneSPA", "壹号汤泉", "南海龙宫", "南海龙宫SPA会所", "KL Spa"],
+  name: "Nanhai Onsen 南海龙宫",
+  alternateName: ["Nanhai Onsen", "南海龙宫", "南海龙宫SPA会所", "南海龙宫汤泉"],
   url: siteUrl,
   image: `${siteUrl}/assets/hero-onsen-warm.jpg`,
   sameAs: sameAsProfiles,
-  hasMap: googlePlaceUrl,
+  hasMap: googleBusinessProfileUrl,
   telephone: "+60 14-315 5632",
   priceRange: "RM58-RM1699",
+  paymentAccepted: ["Cash", "Credit Card", "Debit Card"],
+  currenciesAccepted: "MYR",
   description:
-    "One Spa 南海龙宫 is a 24-hour spa, massage, hot-spring and wellness destination in Kuala Lumpur at Viva Home Mall.",
+    "Nanhai Onsen 南海龙宫 is a 24-hour bathhouse, massage and wellness outlet in Kuala Lumpur at Viva Home Mall. Contact the team on WhatsApp, Telegram or WeChat.",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "Lot No. 2-69 & 2-70, Level 2, Viva Home Mall, 85, Jalan Loke Yew, Taman Miharja",
+    streetAddress: "LG Floor, Viva Home Mall, 85 Jalan Loke Yew, Taman Miharja",
     addressLocality: "Kuala Lumpur",
     postalCode: "52200",
     addressCountry: "MY",
@@ -174,6 +136,21 @@ export const localBusinessJsonLd = {
     },
   ],
   areaServed: ["Kuala Lumpur", "Cheras", "Taman Miharja", "Viva Home Mall"],
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      contactType: "booking",
+      telephone: "+60 14-315 5632",
+      areaServed: "MY",
+      availableLanguage: ["English", "Chinese", "Malay"],
+    },
+  ],
+  makesOffer: [
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "吉隆坡SPA" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "吉隆坡按摩" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "吉隆坡桑拿" } },
+    { "@type": "Offer", itemOffered: { "@type": "Service", name: "吉隆坡上门按摩" } },
+  ],
   knowsAbout: [
     "吉隆坡SPA",
     "吉隆坡水疗",

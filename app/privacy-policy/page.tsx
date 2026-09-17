@@ -1,18 +1,8 @@
-import { FloatingWhatsApp, Footer, Header, SectionHead } from "../site-common";
+import { PolicyPageCn, cnPageSeo } from "../cn-pages";
+import { pageMetadata } from "../seo";
 
-export default function PrivacyPage() {
-  return (
-    <>
-      <Header />
-      <main>
-        <SectionHead eyebrow="Policy" title="Privacy Policy" />
-        <div className="container prose">
-          <div className="pblock"><h3>Booking Information</h3><p>Customer details are used to manage bookings, answer questions and support visit changes.</p></div>
-          <div className="pblock"><h3>Contact</h3><p>For privacy or booking questions, contact the team through WhatsApp.</p></div>
-        </div>
-      </main>
-      <Footer />
-      <FloatingWhatsApp />
-    </>
-  );
+export const metadata = pageMetadata(cnPageSeo["privacy-policy"]);
+
+export default function PolicyPage() {
+  return <PolicyPageCn eyebrow="Nanhai Onsen 南海龙宫 · 政策" title="隐私政策" rows={[ ["资料使用", "仅用于回应咨询与安排现场服务。"], ["联系资料", "仅用于客服跟进，不会公开展示。"], ["安全", "我们不会在页面展示不必要的个人资料。"] ]} />;
 }

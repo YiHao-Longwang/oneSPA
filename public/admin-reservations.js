@@ -102,19 +102,81 @@
 
   function emptyClickStats() {
     return [
-      { channel: "whatsapp", total: 0, today: 0, this_week: 0, this_month: 0 },
-      { channel: "telegram", total: 0, today: 0, this_week: 0, this_month: 0 }
+      { site: "jinyuehui", source: "main", channel: "whatsapp", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "jinyuehui", source: "main", channel: "telegram", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "jinyuehui", source: "main", channel: "wechat", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "jinyuehui", source: "jishi_tiaoxuan", channel: "whatsapp", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "jinyuehui", source: "jishi_tiaoxuan", channel: "telegram", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "jinyuehui", source: "jishi_tiaoxuan", channel: "wechat", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "onespa", source: "baiqu", channel: "whatsapp", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "onespa", source: "baiqu", channel: "telegram", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "onespa", source: "baiqu", channel: "wechat", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "onespa", source: "jishi_tiaoxuan", channel: "whatsapp", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "onespa", source: "jishi_tiaoxuan", channel: "telegram", total: 0, today: 0, this_week: 0, this_month: 0 },
+      { site: "onespa", source: "jishi_tiaoxuan", channel: "wechat", total: 0, today: 0, this_week: 0, this_month: 0 }
     ];
   }
 
-  function clickRow(channel) {
+  function siteLabel(site) {
+    if (site === "jinyuehui") return "金悦汇";
+    if (site === "onespa") return "Nanhai Onsen";
+    return "旧记录";
+  }
+
+  function channelLabel(channel) {
+    if (channel === "whatsapp") return "WhatsApp";
+    if (channel === "telegram") return "Telegram";
+    if (channel === "wechat") return "WeChat";
+    return "Unknown";
+  }
+
+  function sourceLabel(source) {
+    if (source === "main") return "主页";
+    if (source === "baiqu") return "白区";
+    if (source === "jishi_tiaoxuan") return "技师挑选";
+    return "旧来源";
+  }
+
+  function metricLabel(site, source) {
+    return site === "unknown" || source === "unknown" ? "records" : "unique IPs";
+  }
+
+  function clickRow(site, source, channel) {
     return (
       clickSummary.find(function (row) {
-        return row.channel === channel;
-      }) || emptyClickStats().find(function (row) {
-        return row.channel === channel;
-      })
+        return (row.site || "unknown") === site && (row.source || "unknown") === source && row.channel === channel;
+      }) ||
+      emptyClickStats().find(function (row) {
+        return row.site === site && row.source === source && row.channel === channel;
+      }) ||
+      { site: site, source: source, channel: channel, total: 0, today: 0, this_week: 0, this_month: 0 }
     );
+  }
+
+  function clickStatItems() {
+    var items = emptyClickStats();
+    clickSummary.forEach(function (row) {
+      var site = row.site || "unknown";
+      var source = row.source || "unknown";
+      var channel = row.channel;
+      if (
+        site === "unknown" &&
+        !items.some(function (item) {
+          return item.site === site && item.source === source && item.channel === channel;
+        })
+      ) {
+        items.push({
+          site: site,
+          source: source,
+          channel: channel,
+          total: 0,
+          today: 0,
+          this_week: 0,
+          this_month: 0
+        });
+      }
+    });
+    return items;
   }
 
   function renderClickStats() {
@@ -122,18 +184,25 @@
     var recentRoot = $("[data-admin-click-recent]");
     if (!root) return;
 
-    root.innerHTML = ["whatsapp", "telegram"]
-      .map(function (channel) {
-        var row = clickRow(channel);
-        var label = channel === "whatsapp" ? "WhatsApp" : "Telegram";
+    root.innerHTML = clickStatItems()
+      .map(function (item) {
+        var channel = item.channel;
+        var row = clickRow(item.site, item.source, channel);
+        var metric = metricLabel(item.site, item.source);
         return (
           '<article class="admin-click-card ' +
           channel +
           '"><span>' +
-          label +
+          siteLabel(item.site) +
+          " · " +
+          sourceLabel(item.source) +
+          " · " +
+          channelLabel(channel) +
           '</span><strong>' +
           escapeHtml(row.total || 0) +
-          '</strong><div><b>' +
+          '</strong><div>' +
+          metric +
+          ' · <b>' +
           escapeHtml(row.today || 0) +
           '</b> today · <b>' +
           escapeHtml(row.this_week || 0) +
@@ -156,7 +225,7 @@
         .map(function (row) {
           return (
             '<div class="admin-click-line"><b>' +
-            escapeHtml(row.channel === "whatsapp" ? "WhatsApp" : "Telegram") +
+            escapeHtml(siteLabel(row.site) + " · " + sourceLabel(row.source) + " · " + channelLabel(row.channel)) +
             '</b><span>' +
             escapeHtml(row.label || row.path || "-") +
             '</span><time>' +
@@ -265,7 +334,7 @@
           escapeHtml(formatDate(row.visit_date)) +
           '</b></div><div><span>Created</span><b>' +
           escapeHtml(formatDateTime(row.created_at)) +
-          '</b></div><div><span>Payment</span><b>After treatment</b></div></div><div class="admin-customer"><span>' +
+          '</b></div></div><div class="admin-customer"><span>' +
           (row.customer_phone ? "WhatsApp: " + escapeHtml(row.customer_phone) : "") +
           (row.customer_phone && row.customer_telegram ? " · " : "") +
           (row.customer_telegram ? "Telegram: " + escapeHtml(row.customer_telegram) : "") +
@@ -435,7 +504,7 @@
       });
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
+  function initAdminPortal() {
     var tokenInput = $("[data-admin-token]");
     if (!tokenInput) return;
     tokenInput.value = localStorage.getItem(TOKEN_KEY) || "";
@@ -470,5 +539,11 @@
       setLoggedIn(false);
       setStatus("Enter your admin token to continue.", "", "[data-admin-login-status]");
     }
-  });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initAdminPortal);
+  } else {
+    initAdminPortal();
+  }
 })();

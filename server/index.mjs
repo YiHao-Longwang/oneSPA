@@ -1,4 +1,5 @@
 import { createServer } from "node:http";
+import { createHash } from "node:crypto";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
@@ -12,6 +13,11 @@ const PORT = Number(process.env.PORT || process.env.BACKEND_PORT || 4000);
 const DATABASE_URL = process.env.DATABASE_URL || "";
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || "*";
+const CLICK_IP_SALT = process.env.CLICK_IP_SALT || "klyihao-contact-clicks-v1";
+const CONTACT_CLICK_SITE = "onespa";
+const CONTACT_CLICK_DEFAULT_SOURCE = "baiqu";
+const CONTACT_CLICK_SITE_SPLIT_START = "2026-09-03T17:42:00.000Z";
+const UNIQUE_IP_START = "2026-09-07T09:24:16.000Z";
 
 const holidays = new Set([
   "2026-01-01",
@@ -39,16 +45,6 @@ const holidays = new Set([
 ]);
 
 const products = {
-  b1f1: {
-    en: "Twin 12-Hour Pass",
-    cn: "双人 12 小时门票",
-    unit: "/ 2 adults",
-    weekday: 169,
-    weekend: 199,
-    kind: "spa-tiered",
-    leadHours: 0,
-    fee: { sc: 0.1, sst: 0.08 },
-  },
   solo: {
     en: "Solo 12-Hour Pass + Free 30-min Massage",
     cn: "单人 12 小时门票 + 送 30 分钟按摩",
@@ -302,15 +298,48 @@ async function ensureContactClicksTable(sql) {
   await sql`
     create table if not exists contact_clicks (
       id bigserial primary key,
-      channel text not null check (channel in ('whatsapp', 'telegram')),
+      channel text not null check (channel in ('whatsapp', 'telegram', 'wechat')),
+      site text,
+      source text,
       path text,
       href text,
       label text,
+      ip_hash text,
       created_at timestamptz not null default now()
     )
   `;
+  await sql`alter table contact_clicks add column if not exists site text`;
+  await sql`alter table contact_clicks add column if not exists source text`;
+  await sql`alter table contact_clicks add column if not exists ip_hash text`;
+  await sql`alter table contact_clicks drop constraint if exists contact_clicks_channel_check`;
+  await sql`alter table contact_clicks add constraint contact_clicks_channel_check check (channel in ('whatsapp', 'telegram', 'wechat'))`;
+  await sql`
+    update contact_clicks
+    set source = 'jishi_tiaoxuan'
+    where (source is null or source = '') and path ~ '^/jishi-tiaoxuan(/|$)'
+  `;
+  await sql`
+    update contact_clicks
+    set source = 'baiqu'
+    where (source is null or source = '') and path ~ '^/(cn/)?baiqu(/|$)'
+  `;
+  await sql`
+    update contact_clicks
+    set site = case
+      when source = 'baiqu' or path ~ '^/(cn/)?baiqu(/|$)' then 'onespa'
+      when source = 'main' then 'jinyuehui'
+      else site
+    end
+    where (site is null or site = '')
+      and created_at >= ${CONTACT_CLICK_SITE_SPLIT_START}
+      and (source in ('baiqu', 'main') or path ~ '^/(cn/)?baiqu(/|$)')
+  `;
   await sql`create index if not exists contact_clicks_created_at_idx on contact_clicks (created_at desc)`;
   await sql`create index if not exists contact_clicks_channel_idx on contact_clicks (channel)`;
+  await sql`create index if not exists contact_clicks_site_idx on contact_clicks (site)`;
+  await sql`create index if not exists contact_clicks_source_idx on contact_clicks (source)`;
+  await sql`create index if not exists contact_clicks_ip_hash_idx on contact_clicks (ip_hash)`;
+  await sql`create index if not exists contact_clicks_unique_lookup_idx on contact_clicks (site, source, ip_hash, created_at)`;
 }
 
 function clean(value, max = 240) {
@@ -319,11 +348,35 @@ function clean(value, max = 240) {
 
 function cleanChannel(value) {
   const channel = clean(value, 20).toLowerCase();
-  return channel === "whatsapp" || channel === "telegram" ? channel : "";
+  return channel === "whatsapp" || channel === "telegram" || channel === "wechat" ? channel : "";
 }
 
 function channelFilter(value) {
   return cleanChannel(value) || "all";
+}
+
+function siteFilter(value) {
+  const site = clean(value, 40).toLowerCase();
+  return site === "jinyuehui" || site === "onespa" || site === "unknown" ? site : "all";
+}
+
+function sourceForPath(path) {
+  if (/^\/jishi-tiaoxuan(?:\/|$)/.test(path)) return "jishi_tiaoxuan";
+  if (/^\/(?:cn\/)?baiqu(?:\/|$)/.test(path)) return "baiqu";
+  return CONTACT_CLICK_DEFAULT_SOURCE;
+}
+
+function cleanSource(value, path = "") {
+  const source = clean(value, 40).toLowerCase();
+  if (source === "jishi_tiaoxuan" || source === "baiqu" || source === "main") return source;
+  return sourceForPath(path);
+}
+
+function sourceFilter(value) {
+  const source = clean(value, 40).toLowerCase();
+  return source === "jishi_tiaoxuan" || source === "baiqu" || source === "main" || source === "unknown"
+    ? source
+    : "all";
 }
 
 function intParam(value, fallback, min, max) {
@@ -334,6 +387,17 @@ function intParam(value, fallback, min, max) {
 
 function isIgnoredClickPath(path) {
   return /^\/(?:admin|codex-healthcheck)(?:\/|$)/.test(path);
+}
+
+function requestIp(req) {
+  const forwarded = req.headers["cf-connecting-ip"] || req.headers["x-real-ip"] || req.headers["x-forwarded-for"];
+  const headerValue = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+  return clean(String(headerValue || "").split(",")[0] || req.ip || req.socket?.remoteAddress || "", 80);
+}
+
+function hashIp(ip) {
+  if (!ip) return "";
+  return createHash("sha256").update(`${CLICK_IP_SALT}:${ip}`).digest("hex");
 }
 
 const MALAYSIA_OFFSET_MS = 8 * 60 * 60 * 1000;
@@ -400,19 +464,79 @@ async function contactClickStats(sql) {
   const weekIso = localPeriodWindow("week").startIso;
   const monthIso = localPeriodWindow("month").startIso;
   const summary = await sql`
+    with normalized as (
+      select
+        id,
+        case when nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} then 'unknown' else coalesce(nullif(site, ''), 'unknown') end as site,
+        case when nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} then 'unknown' else coalesce(nullif(source, ''), 'unknown') end as source,
+        channel,
+        ip_hash,
+        created_at,
+        nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} as is_old
+      from contact_clicks
+    ),
+    first_clicks as (
+      select id, site, source, channel, ip_hash, created_at, is_old
+      from (
+        select
+          normalized.*,
+          row_number() over (partition by site, source, ip_hash order by created_at asc, id asc) as ip_rank
+        from normalized
+        where not is_old
+      ) ranked
+      where ip_rank = 1
+
+      union all
+
+      select id, site, source, channel, ip_hash, created_at, is_old
+      from normalized
+      where is_old
+    )
     select
+      site,
+      source,
       channel,
       count(*)::int as total,
       count(*) filter (where created_at >= ${todayIso})::int as today,
       count(*) filter (where created_at >= ${weekIso})::int as this_week,
       count(*) filter (where created_at >= ${monthIso})::int as this_month
-    from contact_clicks
-    group by channel
-    order by channel
+    from first_clicks
+    group by site, source, channel
+    order by site, source, channel
   `;
   const recent = await sql`
-    select channel, path, label, created_at
-    from contact_clicks
+    with normalized as (
+      select
+        id,
+        case when nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} then 'unknown' else coalesce(nullif(site, ''), 'unknown') end as site,
+        case when nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} then 'unknown' else coalesce(nullif(source, ''), 'unknown') end as source,
+        channel,
+        ip_hash,
+        path,
+        label,
+        created_at,
+        nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} as is_old
+      from contact_clicks
+    ),
+    first_clicks as (
+      select site, source, channel, path, label, created_at
+      from (
+        select
+          normalized.*,
+          row_number() over (partition by site, source, ip_hash order by created_at asc, id asc) as ip_rank
+        from normalized
+        where not is_old
+      ) ranked
+      where ip_rank = 1
+
+      union all
+
+      select site, source, channel, path, label, created_at
+      from normalized
+      where is_old
+    )
+    select site, source, channel, path, label, created_at
+    from first_clicks
     order by created_at desc
     limit 20
   `;
@@ -421,63 +545,176 @@ async function contactClickStats(sql) {
 
 async function contactClickHistory(sql, query) {
   const channel = channelFilter(query.channel);
+  const site = siteFilter(query.site);
+  const source = sourceFilter(query.source);
   const limit = intParam(query.limit, 25, 10, 100);
   const offset = intParam(query.offset, 0, 0, 100000);
 
-  if (channel === "all") {
-    const [count] = await sql`select count(*)::int as total from contact_clicks`;
-    const clicks = await sql`
-      select id, channel, path, href, label, created_at
+  const [count] = await sql`
+    with normalized as (
+      select
+        id,
+        case when nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} then 'unknown' else coalesce(nullif(site, ''), 'unknown') end as site,
+        case when nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} then 'unknown' else coalesce(nullif(source, ''), 'unknown') end as source,
+        channel,
+        ip_hash,
+        created_at,
+        nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} as is_old
       from contact_clicks
-      order by created_at desc
-      limit ${limit}
-      offset ${offset}
-    `;
-    return { clicks, total: count?.total ?? 0, limit, offset };
-  }
+    ),
+    first_clicks as (
+      select id, site, source, channel, ip_hash, created_at, is_old
+      from (
+        select
+          normalized.*,
+          row_number() over (partition by site, source, ip_hash order by created_at asc, id asc) as ip_rank
+        from normalized
+        where not is_old
+      ) ranked
+      where ip_rank = 1
 
-  const [count] = await sql`select count(*)::int as total from contact_clicks where channel = ${channel}`;
+      union all
+
+      select id, site, source, channel, ip_hash, created_at, is_old
+      from normalized
+      where is_old
+    )
+    select
+      count(*) filter (where not is_old)::int as total,
+      count(*)::int as record_total
+    from first_clicks
+    where (${channel} = 'all' or channel = ${channel})
+      and (${site} = 'all' or site = ${site})
+      and (${source} = 'all' or source = ${source})
+  `;
   const clicks = await sql`
-    select id, channel, path, href, label, created_at
-    from contact_clicks
-    where channel = ${channel}
+    with normalized as (
+      select
+        id,
+        case when nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} then 'unknown' else coalesce(nullif(site, ''), 'unknown') end as site,
+        case when nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} then 'unknown' else coalesce(nullif(source, ''), 'unknown') end as source,
+        channel,
+        ip_hash,
+        path,
+        href,
+        label,
+        created_at,
+        nullif(ip_hash, '') is null or created_at < ${UNIQUE_IP_START} as is_old
+      from contact_clicks
+    ),
+    first_clicks as (
+      select id, site, source, channel, path, href, label, created_at
+      from (
+        select
+          normalized.*,
+          row_number() over (partition by site, source, ip_hash order by created_at asc, id asc) as ip_rank
+        from normalized
+        where not is_old
+      ) ranked
+      where ip_rank = 1
+
+      union all
+
+      select id, site, source, channel, path, href, label, created_at
+      from normalized
+      where is_old
+    )
+    select id, site, source, channel, path, href, label, created_at
+    from first_clicks
+    where (${channel} = 'all' or channel = ${channel})
+      and (${site} = 'all' or site = ${site})
+      and (${source} = 'all' or source = ${source})
     order by created_at desc
     limit ${limit}
     offset ${offset}
   `;
-  return { clicks, total: count?.total ?? 0, limit, offset };
+  return { clicks, total: count?.total ?? 0, record_total: count?.record_total ?? 0, limit, offset };
 }
 
 async function contactClickSeries(sql, query) {
   const channel = channelFilter(query.channel);
+  const site = siteFilter(query.site);
+  const source = sourceFilter(query.source);
   const { period, days, startIso } = localPeriodWindow(query.period, query.days);
-  const rows =
-    channel === "all"
-      ? await sql`
-          select
-            to_char(created_at at time zone 'Asia/Kuala_Lumpur', 'YYYY-MM-DD') as day,
-            channel,
-            count(*)::int as count
-          from contact_clicks
-          where created_at >= ${startIso}
-          group by day, channel
-          order by day asc
-        `
-      : await sql`
-          select
-            to_char(created_at at time zone 'Asia/Kuala_Lumpur', 'YYYY-MM-DD') as day,
-            channel,
-            count(*)::int as count
-          from contact_clicks
-          where created_at >= ${startIso} and channel = ${channel}
-          group by day, channel
-          order by day asc
-        `;
+  const rows = await sql`
+    with normalized as (
+      select
+        id,
+        coalesce(nullif(site, ''), 'unknown') as site,
+        coalesce(nullif(source, ''), 'unknown') as source,
+        channel,
+        ip_hash,
+        created_at
+      from contact_clicks
+      where created_at >= ${UNIQUE_IP_START}
+        and nullif(ip_hash, '') is not null
+    ),
+    first_clicks as (
+      select site, source, channel, ip_hash, created_at
+      from (
+        select
+          normalized.*,
+          row_number() over (partition by site, source, ip_hash order by created_at asc, id asc) as ip_rank
+        from normalized
+      ) ranked
+      where ip_rank = 1
+    )
+    select
+      to_char(created_at at time zone 'Asia/Kuala_Lumpur', 'YYYY-MM-DD') as day,
+      channel,
+      count(*)::int as count
+    from first_clicks
+    where created_at >= ${startIso}
+      and (${channel} = 'all' or channel = ${channel})
+      and (${site} = 'all' or site = ${site})
+      and (${source} = 'all' or source = ${source})
+    group by day, channel
+    order by day asc
+  `;
+  const dailyGroups = await sql`
+    with normalized as (
+      select
+        id,
+        coalesce(nullif(site, ''), 'unknown') as site,
+        coalesce(nullif(source, ''), 'unknown') as source,
+        channel,
+        ip_hash,
+        created_at
+      from contact_clicks
+      where created_at >= ${UNIQUE_IP_START}
+        and nullif(ip_hash, '') is not null
+    ),
+    first_clicks as (
+      select site, source, channel, ip_hash, created_at
+      from (
+        select
+          normalized.*,
+          row_number() over (partition by site, source, ip_hash order by created_at asc, id asc) as ip_rank
+        from normalized
+      ) ranked
+      where ip_rank = 1
+    )
+    select
+      to_char(created_at at time zone 'Asia/Kuala_Lumpur', 'YYYY-MM-DD') as day,
+      site,
+      source,
+      count(*) filter (where channel = 'whatsapp')::int as whatsapp,
+      count(*) filter (where channel = 'telegram')::int as telegram,
+      count(*) filter (where channel = 'wechat')::int as wechat,
+      count(*)::int as total
+    from first_clicks
+    where created_at >= ${startIso}
+      and (${channel} = 'all' or channel = ${channel})
+      and (${site} = 'all' or site = ${site})
+      and (${source} = 'all' or source = ${source})
+    group by day, site, source
+    order by day desc, total desc, site asc, source asc
+  `;
 
   const byDay = new Map();
   for (let index = 0; index < days; index += 1) {
     const day = localDayKey(startIso, index);
-    byDay.set(day, { day, whatsapp: 0, telegram: 0, total: 0 });
+    byDay.set(day, { day, whatsapp: 0, telegram: 0, wechat: 0, total: 0 });
   }
 
   rows.forEach((row) => {
@@ -485,10 +722,11 @@ async function contactClickSeries(sql, query) {
     if (!item) return;
     if (row.channel === "whatsapp") item.whatsapp = Number(row.count || 0);
     if (row.channel === "telegram") item.telegram = Number(row.count || 0);
-    item.total = item.whatsapp + item.telegram;
+    if (row.channel === "wechat") item.wechat = Number(row.count || 0);
+    item.total = item.whatsapp + item.telegram + item.wechat;
   });
 
-  return { series: Array.from(byDay.values()), days, period };
+  return { series: Array.from(byDay.values()), daily_groups: dailyGroups, days, period };
 }
 
 async function contactClickResponse(sql, query) {
@@ -505,7 +743,7 @@ async function notifyTelegram(reservation) {
 
   const first = Array.isArray(reservation.items) ? reservation.items[0] : null;
   const text = [
-    "New One Spa reservation",
+    "New Nanhai Onsen reservation",
     `Ref: ${reservation.reservation_ref}`,
     `Name: ${reservation.customer_name}`,
     reservation.customer_phone ? `WhatsApp: ${reservation.customer_phone}` : "",
@@ -579,13 +817,28 @@ app.post("/api/contact-clicks", async (req, res) => {
   if (!channel) return errorResponse(res, "Invalid contact channel.");
   const path = clean(req.body?.path, 180);
   if (isIgnoredClickPath(path)) return res.status(202).json({ ok: true, ignored: true });
+  const source = cleanSource(req.body?.source, path);
+  const ipHash = hashIp(requestIp(req));
 
   try {
     const sql = db();
     await ensureContactClicksTable(sql);
+    if (ipHash) {
+      const [existing] = await sql`
+        select id, channel
+        from contact_clicks
+        where created_at >= ${UNIQUE_IP_START}
+          and nullif(ip_hash, '') = ${ipHash}
+          and coalesce(nullif(site, ''), ${CONTACT_CLICK_SITE}) = ${CONTACT_CLICK_SITE}
+          and coalesce(nullif(source, ''), ${source}) = ${source}
+        order by created_at asc, id asc
+        limit 1
+      `;
+      if (existing) return res.status(200).json({ ok: true, duplicate: true, first_channel: existing.channel });
+    }
     await sql`
-      insert into contact_clicks (channel, path, href, label)
-      values (${channel}, ${path || null}, ${clean(req.body?.href, 300) || null}, ${clean(req.body?.label, 120) || null})
+      insert into contact_clicks (channel, site, source, path, href, label, ip_hash)
+      values (${channel}, ${CONTACT_CLICK_SITE}, ${source}, ${path || null}, ${clean(req.body?.href, 300) || null}, ${clean(req.body?.label, 120) || null}, ${ipHash || null})
     `;
     res.status(201).json({ ok: true });
   } catch (error) {
@@ -642,8 +895,8 @@ app.post("/api/reservations", async (req, res) => {
       payment: "pay_after_treatment",
       message:
         payload.locale === "cn"
-          ? "预约已记录。付款安排为护理完成后付款。"
-          : "Reservation recorded. Payment is due after treatment.",
+          ? "预约已记录。客服会尽快跟进。"
+          : "Reservation recorded. Our team will follow up soon.",
     });
   } catch (error) {
     errorResponse(res, error instanceof Error ? error.message : "Could not save reservation.", 500);
@@ -677,5 +930,5 @@ app.patch("/api/reservations", async (req, res) => {
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`One Spa reservation websocket backend running on http://localhost:${PORT}`);
+  console.log(`Nanhai Onsen reservation websocket backend running on http://localhost:${PORT}`);
 });

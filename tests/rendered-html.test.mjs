@@ -25,70 +25,75 @@ async function render(path = "/") {
   );
 }
 
-test("server-renders the One Spa page", async () => {
+test("server-renders the home page", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>One Spa 南海龙宫 \| 吉隆坡SPA · 24小时KL按摩娱乐<\/title>/i);
+  assert.match(html, /<title>Nanhai Onsen 南海龙宫 \| 吉隆坡SPA桑拿 · 按摩会所<\/title>/i);
   assert.match(html, /name="keywords" content="[^"]*吉隆坡SPA[^"]*南海龙宫[^"]*klspa/i);
   assert.match(html, /favicon-48x48\.png/);
   assert.match(html, /apple-touch-icon\.png/);
   assert.match(html, /application\/ld\+json/);
-  assert.match(html, /Twelve Hours in a/);
-  assert.match(html, /Pick Yours, Book in Minutes/);
-  assert.match(html, /One-Stop Hot Spring, Sauna/);
+  assert.match(html, /https:\/\/share\.google\/Hcgob1penVXhOcgqf/);
+  assert.match(html, /"paymentAccepted":\["Cash","Credit Card","Debit Card"\]/);
+  assert.match(html, /"currenciesAccepted":"MYR"/);
+  assert.match(html, /"makesOffer":/);
+  assert.match(html, /城中一隅/);
+  assert.match(html, /普通价目/);
+  assert.match(html, /汤泉之内/);
   assert.match(html, /\+60 14-315 5632/);
-  assert.match(html, /Telegram Us/);
+  assert.match(html, /Telegram/);
   assert.match(html, /https:\/\/wa\.me\/60143155632/);
   assert.match(html, /https:\/\/t\.me\/nhlg09/);
-  assert.match(html, /href="\/packages\/#pk-b1f1"/);
+  assert.doesNotMatch(html, /href="\/packages\/#pk-b1f1"|Buy 1 Free 1/i);
   assert.match(html, /href="\/packages\/#pk-solo"/);
-  assert.match(html, /href="\/packages\/#pk-daytime"/);
-  assert.match(html, /href="\/packages\/#pk-scrub"/);
-  assert.match(html, /href="\/packages\/#pk-allday-sm"/);
-  assert.match(html, /href="\/packages\/#pk-daytime-duo"/);
+  assert.match(html, /href="\/packages\/#pk-kids"/);
   assert.match(html, /href="\/facilities\/"/);
   assert.match(html, /href="\/packages\/#treatments"/);
-  assert.match(html, /href="\/packages\/#combos"/);
   assert.match(html, /href="\/faq\/"/);
-  assert.match(html, /href="\/cart\/"/);
+  assert.match(html, /class="mobile-tech-link promo-tech-link" type="button" data-tech-inquiry="true" aria-label="最新 男士必看 技师挑选"/);
+  assert.doesNotMatch(html, /href="\/jishi-tiaoxuan\/"/);
+  assert.match(html, /<strong>最新!!<\/strong> 男士必看/);
   assert.doesNotMatch(html, /onespadw@gmail\.com|react-loading-skeleton|codex-preview/i);
 });
 
-test("server-renders Chinese routes", async () => {
-  for (const path of ["/cn", "/cn/packages", "/cn/facilities", "/cn/tcm", "/cn/contact", "/cn/cart"]) {
+test("server-renders Chinese pages at root paths and redirects old /cn paths", async () => {
+  for (const path of ["/", "/packages", "/facilities", "/tcm", "/contact", "/baiqu"]) {
     const response = await render(path);
     assert.equal(response.status, 200, path);
 
     const html = await response.text();
-    assert.match(html, /中文/);
+    assert.match(html, /lang="zh-Hans"/);
+    assert.match(html, /[\u4e00-\u9fff]/);
     assert.match(html, /\+60 14-315 5632/);
     assert.match(html, /Telegram/);
-    assert.match(html, /href="\/cn\/packages\/"/);
+    assert.match(html, /href="\/packages\/"/);
+    assert.doesNotMatch(html, /href="\/cn\//);
+    assert.match(html, /data-tech-inquiry="true"/);
+    assert.doesNotMatch(html, /href="\/jishi-tiaoxuan\/"/);
   }
 
-  const packages = await (await render("/cn/packages")).text();
-  assert.match(packages, /img-b1f1\.jpg/);
+  for (const path of ["/cn", "/cn/packages", "/cn/facilities", "/cn/tcm", "/cn/contact", "/cn/baiqu"]) {
+    const response = await render(path);
+    assert.equal(response.status, 307, path);
+  }
+
+  const packages = await (await render("/packages")).text();
+  assert.doesNotMatch(packages, /img-b1f1\.jpg|买一送一/);
   assert.match(packages, /class="cards"/);
   assert.match(packages, /class="tlist"/);
-  assert.match(packages, /fac-golf\.jpg/);
+  assert.match(packages, /\/assets\/generated\/treatment-room\.jpg/);
 
-  const facilities = await (await render("/cn/facilities")).text();
-  assert.match(facilities, /fac-icefire\.jpg/);
+  const facilities = await (await render("/facilities")).text();
+  assert.match(facilities, /\/assets\/generated\/bath-pool\.jpg/);
 
-  const tcm = await (await render("/cn/tcm")).text();
-  assert.match(tcm, /tcm-meridian\.jpg/);
+  const tcm = await (await render("/tcm")).text();
+  assert.match(tcm, /\/assets\/generated\/herbal-room\.jpg/);
 });
 
-test("server-renders reservation cart", async () => {
-  const cart = await (await render("/cart")).text();
-  assert.match(cart, /Review Your Reservation/);
-  assert.match(cart, /data-cart-page/);
-  assert.match(cart, /ONE_SPA_TELEGRAM_URL/);
-  assert.match(cart, /booking-cart\.js/);
-
+test("server-renders the admin console and booking sheet", async () => {
   const admin = await (await render("/admin")).text();
   assert.match(admin, /Reservation Portal/);
   assert.match(admin, /data-admin-login/);
@@ -97,7 +102,7 @@ test("server-renders reservation cart", async () => {
   assert.match(admin, /data-admin-click-stats/);
   assert.match(admin, /data-admin-refresh-clicks/);
   assert.match(admin, /href="\/admin\/clicks"/);
-  assert.match(admin, /admin-reservations\.js\?v=20260825-socket-auth/);
+  assert.match(admin, /admin-reservations\.js\?v=20260908-wechat/);
   assert.match(admin, /data-admin-token/);
   assert.match(admin, /data-admin-filter/);
   assert.doesNotMatch(admin, /API base|data-admin-api-base/);
@@ -110,10 +115,11 @@ test("server-renders reservation cart", async () => {
   assert.match(clickHistory, /data-click-period/);
   assert.match(clickHistory, /This week/);
   assert.match(clickHistory, /This month/);
-  assert.match(clickHistory, /admin-click-history\.js\?v=20260825-click-history/);
+  assert.match(clickHistory, /admin-click-history\.js\?v=20260911-daily-groups/);
+  assert.match(clickHistory, /<option value="wechat">WeChat<\/option>/);
 
   const packages = await (await render("/packages")).text();
-  assert.match(packages, /data-book="b1f1"/);
+  assert.doesNotMatch(packages, /data-book="b1f1"/);
   assert.match(packages, /data-book="kids"/);
 
   const cartScript = await readFile(new URL("../public/booking-cart.js", import.meta.url), "utf8");
@@ -127,20 +133,21 @@ test("server-renders reservation cart", async () => {
   assert.match(cartScript, /bookingNotes/);
   assert.match(cartScript, /booking-open/);
   assert.match(cartScript, /Pick your date/);
-  assert.match(cartScript, /Both adults enter together/);
-  assert.match(cartScript, /The free massage is an online-booking bonus/);
-  assert.match(cartScript, /Booking time = entry time/);
-  assert.match(cartScript, /12-hour entry already included/);
+  assert.match(cartScript, /For two guests, choose the same date and time/);
+  assert.match(cartScript, /Regular 12-hour entry/);
+  assert.match(cartScript, /Booking time is your approximate arrival time/);
+  assert.match(cartScript, /This item is handled as a separate add-on/);
   assert.match(cartScript, /Fixed two-hour session at RM798 flat/);
   assert.match(cartScript, /Book ·/);
   assert.match(cartScript, /all-in/);
-  assert.match(cartScript, /Checkout Details/);
-  assert.match(cartScript, /WhatsApp phone/);
-  assert.match(cartScript, /Telegram username/);
-  assert.match(cartScript, /Please provide WhatsApp phone or Telegram username/);
   assert.match(cartScript, /ONE_SPA_TELEGRAM_URL/);
-  assert.match(cartScript, /Contact Staff on Telegram/);
   assert.match(cartScript, /cart-confirm-modal/);
+  // A reservation leaves through one of the three chat channels.
+  assert.match(cartScript, /data-cart-confirm-wa/);
+  assert.match(cartScript, /data-cart-confirm-tg/);
+  assert.match(cartScript, /data-cart-confirm-wx/);
+  assert.match(cartScript, /reservationMessage/);
+  assert.doesNotMatch(cartScript, /onespa_reservation_cart_v1|data-cart-page|function renderCart/);
   assert.doesNotMatch(cartScript, /confirm\(/);
   assert.doesNotMatch(cartScript, /alert\(/);
   assert.doesNotMatch(cartScript, /booking-backdrop" data-booking-close/);
@@ -150,7 +157,16 @@ test("server-renders reservation cart", async () => {
   assert.match(contactScript, /sendBeacon/);
   assert.match(contactScript, /whatsapp/);
   assert.match(contactScript, /telegram/);
+  assert.match(contactScript, /wechat/);
+  assert.match(contactScript, /data-wechat-copy/);
   assert.match(contactScript, /codex-healthcheck/);
+
+  const techPromoScript = await readFile(new URL("../public/tech-promo.js", import.meta.url), "utf8");
+  assert.match(techPromoScript, /promoHidden = true/);
+  assert.match(techPromoScript, /tech-inquiry-modal/);
+  assert.match(techPromoScript, /可以通过 WhatsApp 咨询更多关于技师挑选的内容哦/);
+  assert.match(techPromoScript, /data-click-source="jishi_tiaoxuan"/);
+  assert.match(techPromoScript, /data-tech-inquiry/);
 
   const adminScript = await readFile(new URL("../public/admin-reservations.js", import.meta.url), "utf8");
   assert.match(adminScript, /query: \{ token: token \}/);
@@ -178,13 +194,15 @@ test("keeps starter preview removed", async () => {
     readFile(new URL("../public/sitemap.xml", import.meta.url), "utf8"),
   ]);
 
-  assert.match(page, /whatsappHref/);
-  assert.match(page, /telegramHref/);
-  assert.match(layout, /applicationName: "onepsa"/);
-  assert.match(layout, /contact-clicks\.js\?v=20260824-contact-clicks/);
+  assert.match(page, /ContactButtons/);
+  assert.match(page, /whatsappNumberDisplay/);
+  assert.match(layout, /applicationName: "Nanhai Onsen"/);
+  assert.match(layout, /contact-clicks\.js\?v=20260908-wechat/);
+  assert.match(layout, /tech-promo\.js\?v=20260914-hidden/);
   assert.match(robots, /Sitemap: https:\/\/onespa\.klyihao\.com\/sitemap\.xml/);
-  assert.match(sitemap, /https:\/\/onespa\.klyihao\.com\/cn\/packages\//);
-  const chineseRoutes = await readFile(new URL("../app/cn/[...slug]/page.tsx", import.meta.url), "utf8");
+  assert.match(sitemap, /https:\/\/onespa\.klyihao\.com\/packages\//);
+  assert.doesNotMatch(sitemap, /\/cn\//);
+  const chineseRoutes = await readFile(new URL("../app/cn-pages.tsx", import.meta.url), "utf8");
   assert.doesNotMatch(chineseRoutes, /Telegram 我们|WhatsApp 我们/);
   assert.doesNotMatch(page, /SkeletonPreview|codex-preview/);
   assert.doesNotMatch(layout, /Starter Project|codex-preview|_sites-preview/);

@@ -43,19 +43,9 @@ const holidays = new Set([
 ]);
 
 const products = {
-  b1f1: {
-    en: "Twin 12-Hour Pass",
-    cn: "双人 12 小时门票",
-    unit: "/ 2 adults",
-    weekday: 169,
-    weekend: 199,
-    kind: "spa-tiered",
-    leadHours: 0,
-    fee: { sc: 0.1, sst: 0.08 },
-  },
   solo: {
-    en: "Solo 12-Hour Pass + Free 30-min Massage",
-    cn: "单人 12 小时门票 + 送 30 分钟按摩",
+    en: "12-Hour Single Entry + 30-min Massage",
+    cn: "12 小时普通入场",
     unit: "/ person",
     weekday: 169,
     weekend: 199,
@@ -64,8 +54,8 @@ const products = {
     fee: { sc: 0.1, sst: 0.08 },
   },
   daytime: {
-    en: "Daytime Massage Package",
-    cn: "日间按摩配套",
+    en: "Daytime Entry",
+    cn: "日间普通入场",
     unit: "/ person",
     single: 199,
     kind: "spa-daily",
@@ -74,8 +64,8 @@ const products = {
     fee: { sc: 0.1, sst: 0.08 },
   },
   scrub: {
-    en: "Yangzhou Body Scrub Package",
-    cn: "扬州搓澡配套",
+    en: "Body Scrub Add-On",
+    cn: "古法搓背加项",
     unit: "/ person",
     weekday: 199,
     weekend: 239,
@@ -84,8 +74,8 @@ const products = {
     fee: { sc: 0.1, sst: 0.08 },
   },
   "allday-sm": {
-    en: "All-Day Scrub & Massage Package",
-    cn: "沐净舒养套餐",
+    en: "Body Care Add-Ons",
+    cn: "身体护理加项",
     unit: "/ person",
     single: 379,
     kind: "spa-daily",
@@ -93,8 +83,8 @@ const products = {
     fee: { sc: 0.1, sst: 0.08 },
   },
   "daytime-duo": {
-    en: "Daytime Duo Package",
-    cn: "日间双人套餐",
+    en: "Two-Guest Booking",
+    cn: "双人普通预约",
     unit: "/ 2 people",
     single: 379,
     kind: "spa-daily",
@@ -178,13 +168,13 @@ function validateSlot(product: (typeof products)[keyof typeof products], date: s
   const [hour] = time.split(":").map(Number);
   if ("hours" in product) {
     const [start, end] = product.hours;
-    if (hour < start || hour > end) throw new Error("Selected time is outside this package's booking hours.");
+    if (hour < start || hour > end) throw new Error("Selected time is outside this selection.s booking hours.");
   }
 
   const earliest = new Date();
   earliest.setHours(earliest.getHours() + product.leadHours);
   if (selectedDateTime(date, time) < earliest) {
-    throw new Error(`This package must be booked at least ${product.leadHours} hour(s) ahead.`);
+    throw new Error(`This selection must be booked at least ${product.leadHours} hour(s) ahead.`);
   }
 }
 
@@ -205,7 +195,7 @@ function makeRef() {
 function calculate(items: CartItem[]) {
   const normalized = items.map((item) => {
     const product = products[item.code as keyof typeof products];
-    if (!product) throw new Error("Unknown package selected.");
+    if (!product) throw new Error("Unknown selection.");
     if (!item.date || !validDate(item.date)) throw new Error("Visit date is required.");
     if (!item.time || !/^\d{2}:\d{2}$/.test(item.time)) throw new Error("Visit time is required.");
 
@@ -372,8 +362,8 @@ export async function POST(request: Request) {
         payment: "pay_after_treatment",
         message:
           payload.locale === "cn"
-            ? "预约已记录。付款安排为护理完成后付款。"
-            : "Reservation recorded. Payment is due after treatment.",
+            ? "预约已记录。客服会尽快跟进。"
+            : "Reservation recorded. Our team will follow up soon.",
       },
       { status: 201 },
     );
