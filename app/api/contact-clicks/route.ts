@@ -76,7 +76,7 @@ function channelFilter(value: unknown) {
 
 function siteFilter(value: unknown) {
   const site = clean(value, 40).toLowerCase();
-  return site === "jinyuehui" || site === "onespa" || site === "unknown" ? site : "all";
+  return ["jinyuehui", "onespa", "klhuisuo", "unknown"].includes(site) ? site : "all";
 }
 
 function sourceForPath(path: string) {
@@ -85,7 +85,8 @@ function sourceForPath(path: string) {
 
 function cleanSource(value: unknown, path = "") {
   const source = clean(value, 40).toLowerCase();
-  if (source === "main" || source === "jishi_tiaoxuan" || source === "baiqu") return source;
+  if (source === "jishi_tiaoxuan") return source;
+  if (source === "main" || source === "baiqu") return "baiqu";
   return sourceForPath(path);
 }
 

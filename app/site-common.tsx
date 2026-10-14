@@ -1,3 +1,4 @@
+import { technicianSelectionEnabled } from "./site-features";
 import type { ReactNode } from "react";
 import { googleBusinessProfileUrl } from "./seo";
 
@@ -35,7 +36,7 @@ const whatsappDigits = whatsappNumberDisplay.replace(/\D/g, "");
 const whatsappBase = `https://wa.me/${whatsappDigits}`;
 export const whatsappCartBase = `${whatsappBase}?text=`;
 export const whatsappHref = `${whatsappBase}?text=Hi%2C%20I%20would%20like%20to%20ask%20about%20the%20prices`;
-export const whatsappHrefCn = `${whatsappBase}?text=%E4%BD%A0%E5%A5%BD%EF%BC%8C%E6%88%91%E6%83%B3%E4%BA%86%E8%A7%A3%E4%BB%B7%E7%9B%AE`;
+export const whatsappHrefCn = `${whatsappBase}?text=${encodeURIComponent("你好，我想咨询预约，进店会报龙王。")}`;
 export const telegramHref = process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/nhlg09";
 export const telegramHrefCn = process.env.NEXT_PUBLIC_TELEGRAM_URL || "https://t.me/nhlg09";
 export const telegramDisplay = telegramHref.replace(/^https?:\/\/t\.me\//, "@").replace(/\/$/, "");
@@ -46,26 +47,24 @@ export const navItems = [
   ["Facilities", "/facilities/"],
   ["Prices", "/packages/"],
   ["TCM", "/tcm/"],
-  ["Beauty", "/beauty/"],
   ["Home Service", "/home-massage/"],
   ["Contact", "/contact/"],
   ["FAQ", "/faq/"],
   ["技师挑选", "/jishi-tiaoxuan/"],
-];
+].filter(([label]) => technicianSelectionEnabled || label !== "技师挑选");
 const cnNavItems = [
   ["Home", "首页", "/"],
   ["Facilities", "汤泉空间", "/facilities/"],
   ["Packages", "普通价目", "/packages/"],
   ["TCM", "中医调理", "/tcm/"],
-  ["Beauty", "美容护理", "/beauty/"],
   ["Home Service", "上门按摩", "/home-massage/"],
   ["Contact", "来访指引", "/contact/"],
   ["FAQ", "常见问题", "/faq/"],
   ["技师挑选", "技师挑选", "/jishi-tiaoxuan/"],
-];
+].filter(([key]) => technicianSelectionEnabled || key !== "技师挑选");
 const navLabels: Record<string, string> = {
   Facilities: "The bathhouse", Packages: "Prices", TCM: "TCM wellness",
-  Beauty: "Beauty", "Home Service": "At home", Contact: "Visit us",
+  "Home Service": "At home", Contact: "Visit us",
 };
 
 export const footerPolicies = [
@@ -85,7 +84,6 @@ const footerExperienceLinks = [
   ["Prices", "/packages/"],
   ["Facilities", "/facilities/"],
   ["Home Massage", "/home-massage/"],
-  ["Beauty Studio", "/beauty/"],
   ["TCM Wellness", "/tcm/"],
 ];
 
@@ -93,7 +91,6 @@ const footerExperienceLinksCn = [
   ["价目", "/packages/"],
   ["设施", "/facilities/"],
   ["上门按摩", "/home-massage/"],
-  ["美容部", "/beauty/"],
   ["中医部", "/tcm/"],
 ];
 
@@ -248,12 +245,14 @@ export function Header({ active = "Home", locale = "cn" }: { active?: string; lo
           ))}
         </nav>
         <div className="top-right">
-          <button className="mobile-tech-link promo-tech-link" type="button" data-tech-inquiry aria-label="最新 男士必看 技师挑选">
-            <span className="promo-kicker">
-              <strong>最新!!</strong> 男士必看
-            </span>
-            <span className="promo-main">技师挑选</span>
-          </button>
+          {technicianSelectionEnabled && (
+            <button className="mobile-tech-link promo-tech-link" type="button" data-tech-inquiry aria-label="最新 男士必看 技师挑选">
+              <span className="promo-kicker">
+                <strong>最新!!</strong> 男士必看
+              </span>
+              <span className="promo-main">技师挑选</span>
+            </button>
+          )}
           <details className="mnav">
             <summary aria-label="Menu">
               <svg
@@ -283,6 +282,14 @@ export function Header({ active = "Home", locale = "cn" }: { active?: string; lo
               ))}
             </nav>
           </details>
+        </div>
+      </div>
+      <div className="reservation-header-banner" role="note" aria-label="到店预约提醒">
+        <div className="reservation-header-inner">
+          <span className="reservation-header-eyebrow">到店提醒</span>
+          <strong>进店预约报龙王</strong>
+          <span className="reservation-header-channels">WhatsApp · WeChat · Telegram</span>
+          <a href="/contact/">立即联系 <span aria-hidden="true">↗</span></a>
         </div>
       </div>
     </header>
@@ -366,8 +373,8 @@ export function Footer({ locale = "cn" }: { locale?: Locale }) {
               </div>
               <p className="footer-copy">
                 {isCn
-                  ? `${brandCn}，吉隆坡 24 小时温泉会所，集合泡汤、按摩、美容、中医调理与私人养生护理。可通过 WhatsApp、Telegram 或 WeChat 联系客服。`
-                  : `${brandFull} is a warm, all-hours retreat for hot spring bathing, massage, beauty, TCM and private wellness sessions in Kuala Lumpur. Contact us on WhatsApp, Telegram or WeChat.`}
+                  ? `${brandCn}，吉隆坡 24 小时温泉会所，集合泡汤、按摩、中医调理与私人养生护理。可通过 WhatsApp、Telegram 或 WeChat 联系客服。`
+                  : `${brandFull} is a warm, all-hours retreat for hot spring bathing, massage, TCM and private wellness sessions in Kuala Lumpur. Contact us on WhatsApp, Telegram or WeChat.`}
               </p>
             </div>
           </div>

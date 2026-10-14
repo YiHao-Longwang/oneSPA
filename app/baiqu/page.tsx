@@ -1,3 +1,4 @@
+import { technicianSelectionEnabled } from "../site-features";
 import { Fragment } from "react";
 import {
   experienceImage,
@@ -12,7 +13,7 @@ import { pageMetadata } from "../seo";
 export const metadata = pageMetadata({
   title: "Nanhai Onsen 南海龙宫 | 吉隆坡SPA · 吉隆坡按摩娱乐",
   description:
-    "Nanhai Onsen 南海龙宫位于吉隆坡 Viva Home Mall，24 小时营业，提供吉隆坡SPA、吉隆坡按摩、汤泉汗蒸、美容、中医调理与休闲娱乐。",
+    "Nanhai Onsen 南海龙宫位于吉隆坡 Viva Home Mall，24 小时营业，提供吉隆坡SPA、吉隆坡按摩、汤泉汗蒸、中医调理与休闲娱乐。",
   path: "/baiqu/",
   keywords: ["吉隆坡SPA", "吉隆坡按摩", "吉隆坡娱乐", "南海龙宫", "klspa", "klmassage", "klentertainment"],
 });
@@ -30,14 +31,14 @@ const packages = [
   {
     title: "12 小时普通入场",
     desc: "成人普通入场，入场后可停留 12 小时",
-    price: "RM169++ 起 / 人",
+    price: "RM169 起 / 人",
     href: `${siteBase}/packages/#pk-solo`,
     featured: true,
   },
   {
     title: "儿童票",
     desc: "12 岁及以下儿童，须成人陪同",
-    price: "RM58++ 起 / 小孩",
+    price: "RM58 起 / 小孩",
     href: `${siteBase}/packages/#pk-kids`,
   },
 ];
@@ -106,12 +107,14 @@ export default function ChinesePage() {
           <a className="brand" href="/" aria-label="Nanhai Onsen 南海龙宫">
             <Brandmark />
           </a>
-          <button className="mobile-tech-link promo-tech-link" type="button" data-tech-inquiry aria-label="最新 男士必看 技师挑选">
-            <span className="promo-kicker">
-              <strong>最新!!</strong> 男士必看
-            </span>
-            <span className="promo-main">技师挑选</span>
-          </button>
+          {technicianSelectionEnabled && (
+            <button className="mobile-tech-link promo-tech-link" type="button" data-tech-inquiry aria-label="最新 男士必看 技师挑选">
+              <span className="promo-kicker">
+                <strong>最新!!</strong> 男士必看
+              </span>
+              <span className="promo-main">技师挑选</span>
+            </button>
+          )}
           <nav className="nav" aria-label="Primary navigation">
             <a className="on" href="/baiqu/">
               白区首页
@@ -119,8 +122,7 @@ export default function ChinesePage() {
             <a href="/packages/">价目</a>
             <a href="/facilities/">设施</a>
             <a href="/home-massage/">上门服务</a>
-            <button type="button" data-tech-inquiry>技师挑选</button>
-            <a href="/beauty/">美容部</a>
+            {technicianSelectionEnabled && <button type="button" data-tech-inquiry>技师挑选</button>}
             <a href="/tcm/">中医部</a>
             <a href="/faq/">常见问题</a>
             <a href="/contact/">联系我们</a>
@@ -146,9 +148,8 @@ export default function ChinesePage() {
                 <a href="/packages/">价目</a>
                 <a href="/facilities/">设施</a>
                 <a href="/home-massage/">上门服务</a>
-                <button type="button" data-tech-inquiry>技师挑选</button>
-                <a href="/beauty/">美容部</a>
-                <a href="/tcm/">中医部</a>
+                {technicianSelectionEnabled && <button type="button" data-tech-inquiry>技师挑选</button>}
+                    <a href="/tcm/">中医部</a>
                 <a href="/faq/">常见问题</a>
                 <a href="/contact/">联系我们</a>
               </nav>
@@ -227,7 +228,7 @@ export default function ChinesePage() {
               ))}
             </div>
             <p className="taxnote osw-home-tax">
-              ++ = 10% 服务费 + 8% SST；选完日期即显示到手价
+              选完日期即显示到手价
             </p>
             <div className="center-cta">
               <a className="btn" href={`${siteBase}/packages/`}>

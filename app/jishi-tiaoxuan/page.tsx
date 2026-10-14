@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { technicianSelectionEnabled } from "../site-features";
 import { pageMetadata } from "../seo";
 import TechnicianSelection from "../technician-selection";
 
@@ -17,5 +19,6 @@ export const metadata = pageMetadata({
 });
 
 export default function Home() {
+  if (!technicianSelectionEnabled) redirect("/");
   return <TechnicianSelection />;
 }

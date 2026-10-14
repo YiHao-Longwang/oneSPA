@@ -23,8 +23,11 @@
 
   function sourceFor(control) {
     var attr = String(control.getAttribute("data-click-source") || "").trim().toLowerCase();
-    if (attr === "jishi_tiaoxuan" || attr === "baiqu") return attr;
-    return /^\/jishi-tiaoxuan(?:\/|$)/.test(location.pathname) ? "jishi_tiaoxuan" : "baiqu";
+    if (attr === "jishi_tiaoxuan") return attr;
+    if (attr === "baiqu" || attr === "main") return "baiqu";
+    if (/^\/jishi-tiaoxuan(?:\/|$)/.test(location.pathname)) return "jishi_tiaoxuan";
+    if (/^\/baiqu(?:\/|$)/.test(location.pathname)) return "baiqu";
+    return "baiqu";
   }
 
   function send(payload) {

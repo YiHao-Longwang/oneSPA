@@ -1,3 +1,4 @@
+import { technicianSelectionEnabled } from "./site-features";
 import type { Metadata } from "next";
 import "./globals.css";
 import { localBusinessJsonLd, pageMetadata, siteUrl } from "./seo";
@@ -7,7 +8,7 @@ export const metadata: Metadata = {
   ...pageMetadata({
     title: "Nanhai Onsen 南海龙宫 | 吉隆坡SPA · KL Spa & Massage",
     description:
-      "Nanhai Onsen 南海龙宫 at Viva Home Mall Kuala Lumpur: 24-hour spa, hot spring, KL massage, beauty, TCM wellness, private rooms and home massage booking.",
+      "Nanhai Onsen 南海龙宫 at Viva Home Mall Kuala Lumpur: 24-hour spa, hot spring, KL massage, TCM wellness, private rooms and home massage booking.",
     path: "/",
     keywords: [
       "南海龙宫 SPA",
@@ -52,10 +53,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd) }}
         />
         <script src="/motion.js?v=20260914-subnav-stable" defer />
-        <script src="/contact-clicks.js?v=20260908-wechat" defer />
-        <script src="/booking-cart.js?v=20260914-cn-root" defer />
+        <script src="/contact-clicks.js?v=20260923-onespa-baiqu" defer />
         <script src="/wechat-copy.js?v=20260903-wechat" defer />
-        <script src="/tech-promo.js?v=20260914-hidden" defer />
+        {technicianSelectionEnabled && <script src="/tech-promo.js?v=20261002-community" defer />}
       </body>
     </html>
   );

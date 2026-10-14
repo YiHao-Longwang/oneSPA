@@ -5,7 +5,7 @@ import { pageMetadata } from "./seo";
 export const metadata = pageMetadata({
   title: "Nanhai Onsen 南海龙宫 | 吉隆坡SPA桑拿 · 按摩会所",
   description:
-    "Nanhai Onsen 南海龙宫是吉隆坡 24 小时SPA、桑拿、按摩与休闲娱乐会所，位于 Viva Home Mall。汤泉汗蒸、上门按摩、美容养生与中医调理，可用 WhatsApp、Telegram 或 WeChat 联系客服。",
+    "Nanhai Onsen 南海龙宫是吉隆坡 24 小时SPA、桑拿、按摩与休闲娱乐会所，位于 Viva Home Mall。汤泉汗蒸、上门按摩与中医调理，可用 WhatsApp、Telegram 或 WeChat 联系客服。",
   path: "/",
   keywords: [
     "吉隆坡SPA",

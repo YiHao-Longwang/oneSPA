@@ -37,8 +37,6 @@ const filters = [
 
 const whatsappHref =
   "https://wa.me/60143155632?text=%E6%82%A8%E5%A5%BD%EF%BC%8C%E6%88%91%E6%83%B3%E9%A2%84%E7%BA%A6%E6%9C%8D%E5%8A%A1";
-const telegramHref = "https://t.me/nhlg09";
-const wechatId = process.env.NEXT_PUBLIC_WECHAT_ID || "Longwang1918";
 const mediaBase = process.env.NEXT_PUBLIC_TECHNICIAN_MEDIA_BASE_URL || "https://chuqinbiao.klyihao.com";
 
 function mediaUrl(path?: string) {
@@ -76,18 +74,6 @@ function IconChat() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
       <path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L4 20l1-4.4A8.5 8.5 0 1 1 21 11.5Z" />
-    </svg>
-  );
-}
-
-function IconWeChat() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <path d="M10.5 18.5a8 6.2 0 1 1 7.6-4.2" />
-      <path d="M14 16.6a5.1 4.1 0 1 0 4.7-2.6" />
-      <path d="m8.2 18.3-3 .9.9-2" />
-      <path d="m18 20.1 2.4.7-.7-1.7" />
-      <path d="M7.8 10h.1M12 10h.1M16.2 17h.1M19.2 17h.1" />
     </svg>
   );
 }
@@ -216,19 +202,6 @@ export default function TechnicianSelection() {
           <IconChat />
           WhatsApp客服
         </a>
-        <a className="telegram" href={telegramHref} target="_blank" rel="noopener" data-click-source="jishi_tiaoxuan">
-          Telegram客服
-        </a>
-        <button
-          className="wechat"
-          type="button"
-          data-wechat-copy={wechatId}
-          data-copy-label={`WeChat ${wechatId}`}
-          data-copied-label="已复制 WeChat ID"
-        >
-          <IconWeChat />
-          WeChat客服
-        </button>
       </div>
 
       <section className="tech-content">
@@ -319,18 +292,6 @@ export default function TechnicianSelection() {
               <a className="whatsapp" href={whatsappHref} target="_blank" rel="noopener" data-click-source="jishi_tiaoxuan">
                 WhatsApp预约
               </a>
-              <a className="telegram" href={telegramHref} target="_blank" rel="noopener" data-click-source="jishi_tiaoxuan">
-                Telegram预约
-              </a>
-              <button
-                className="wechat"
-                type="button"
-                data-wechat-copy={wechatId}
-                data-copy-label={`WeChat ${wechatId}`}
-                data-copied-label="已复制 WeChat ID"
-              >
-                WeChat预约
-              </button>
             </div>
           </div>
         </div>
