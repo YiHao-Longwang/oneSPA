@@ -25,7 +25,7 @@ export const seoKeywords = [
   "24 hour spa KL",
   "onsen KL",
   "massage KL",
-  "Viva Home Mall spa",
+  "Vivahome Shopping Mall spa",
   "Kuala Lumpur spa",
   "KL onsen spa",
   "massage Kuala Lumpur",
@@ -87,7 +87,7 @@ export function pageMetadata({
   };
 }
 
-/** The Google Business Profile this site belongs to (南海龙宫SPA会所, Viva Home Mall). */
+/** The Google Business Profile this site belongs to (南海龙宫SPA会所, Vivahome Shopping Mall). */
 export const googleBusinessProfileUrl = "https://share.google/Hcgob1penVXhOcgqf";
 
 /**
@@ -119,12 +119,10 @@ export const localBusinessJsonLd = {
   paymentAccepted: ["Cash", "Credit Card", "Debit Card"],
   currenciesAccepted: "MYR",
   description:
-    "Nanhai Onsen 南海龙宫 is a 24-hour bathhouse, massage and wellness outlet in Kuala Lumpur at Viva Home Mall. Contact the team on WhatsApp, Telegram or WeChat.",
+    "Nanhai Onsen 南海龙宫 is a 24-hour bathhouse, massage and wellness outlet in Kuala Lumpur at Vivahome Shopping Mall. Contact the team on WhatsApp, Telegram or WeChat.",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "LG Floor, Viva Home Mall, 85 Jalan Loke Yew, Taman Miharja",
-    addressLocality: "Kuala Lumpur",
-    postalCode: "52200",
+    streetAddress: "Vivahome Shopping Mall",
     addressCountry: "MY",
   },
   openingHoursSpecification: [
@@ -135,7 +133,7 @@ export const localBusinessJsonLd = {
       closes: "23:59",
     },
   ],
-  areaServed: ["Kuala Lumpur", "Cheras", "Taman Miharja", "Viva Home Mall"],
+  areaServed: ["Kuala Lumpur", "Cheras", "Taman Miharja", "Vivahome Shopping Mall"],
   contactPoint: [
     {
       "@type": "ContactPoint",

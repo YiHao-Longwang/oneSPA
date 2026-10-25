@@ -13,7 +13,7 @@ import { pageMetadata } from "../seo";
 export const metadata = pageMetadata({
   title: "Nanhai Onsen 南海龙宫 | 吉隆坡SPA · 吉隆坡按摩娱乐",
   description:
-    "Nanhai Onsen 南海龙宫位于吉隆坡 Viva Home Mall，24 小时营业，提供吉隆坡SPA、吉隆坡按摩、汤泉汗蒸、中医调理与休闲娱乐。",
+    "Nanhai Onsen 南海龙宫位于吉隆坡 Vivahome Shopping Mall，24 小时营业，提供吉隆坡SPA、吉隆坡按摩、汤泉汗蒸、中医调理与休闲娱乐。",
   path: "/baiqu/",
   keywords: ["吉隆坡SPA", "吉隆坡按摩", "吉隆坡娱乐", "南海龙宫", "klspa", "klmassage", "klentertainment"],
 });
@@ -174,7 +174,7 @@ export default function ChinesePage() {
               南海龙宫温泉会所
             </h1>
             <p>
-              Nanhai Onsen 南海龙宫开在吉隆坡 Viva Home Mall LG Floor，一天 24 小时都不关门。
+              Nanhai Onsen 南海龙宫开在吉隆坡 Vivahome Shopping Mall，一天 24 小时都不关门。
               一张门票就是 12 小时：吉隆坡SPA水疗、汤池、汗蒸、桑拿、按摩，
               饿了还有餐饮，慢慢泡不用赶。
             </p>

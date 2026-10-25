@@ -8,13 +8,13 @@ export const metadata: Metadata = {
   ...pageMetadata({
     title: "Nanhai Onsen 南海龙宫 | 吉隆坡SPA · KL Spa & Massage",
     description:
-      "Nanhai Onsen 南海龙宫 at Viva Home Mall Kuala Lumpur: 24-hour spa, hot spring, KL massage, TCM wellness, private rooms and home massage booking.",
+      "Nanhai Onsen 南海龙宫 at Vivahome Shopping Mall Kuala Lumpur: 24-hour spa, hot spring, KL massage, TCM wellness, private rooms and home massage booking.",
     path: "/",
     keywords: [
       "南海龙宫 SPA",
       "吉隆坡按摩推荐",
       "Kuala Lumpur spa",
-      "Viva Home Mall massage",
+      "Vivahome Shopping Mall massage",
       "nanhai onsen",
       "onsen kl",
     ],
